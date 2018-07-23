@@ -46,6 +46,7 @@ include s2n.mk
 
 .PHONY : libs
 libs:
+	$(MAKE) -C pq-crypto/bike
 	$(MAKE) -C utils
 	$(MAKE) -C error
 	$(MAKE) -C stuffer
