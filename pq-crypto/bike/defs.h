@@ -47,12 +47,72 @@
 ////////////////////////////////////////////
 // Implicit Parameters (do NOT edit below)
 ///////////////////////////////////////////
+
+// BIKE-1 and BIKE-2 parameters:
+#ifndef BIKE3
+// 128-bits of post-quantum security parameters:
+#ifdef PARAM128
+#define R_BITS 32749ULL
+#define DV     137ULL
+#define T1     264ULL
+#define VAR_TH_FCT(x) (17.489 + 0.0043536 * (x))
+#define DELTA_BIT_FLIPPING 10
+#define S_BIT_FLIPPING 12000
+#else
+// 96-bits of post-quantum security parameters:
+#ifdef PARAM96
+//    #define R_BITS 21893ULL
+#define R_BITS 19853ULL
+#define DV     103ULL
+#define T1     199ULL
+#define VAR_TH_FCT(x) (15.932 + 0.0052936 * (x))
+#define DELTA_BIT_FLIPPING 8
+#define S_BIT_FLIPPING 7000
+#else
+// 64-bits of post-quantum security parameters:
+#ifdef PARAM64
 #define R_BITS 10163ULL
 #define DV     71ULL
 #define T1     134ULL
 #define VAR_TH_FCT(x) (13.530 + 0.0069721 * (x))
 #define DELTA_BIT_FLIPPING 10
 #define S_BIT_FLIPPING 3000
+#endif
+#endif
+#endif
+
+// BIKE-3 parameters:
+#else
+// 128-bits of post-quantum security parameters:
+#ifdef PARAM128
+#define R_BITS 36131ULL
+#define DV     133ULL
+#define T1     300ULL
+#define VAR_TH_FCT(x) (17.061 + 0.0038459 * (x))
+#define DELTA_BIT_FLIPPING 10
+#define S_BIT_FLIPPING 12000
+#else
+// 96-bits of post-quantum security parameters:
+#ifdef PARAM96
+#define R_BITS 21683ULL
+#define DV     99ULL
+#define T1     226ULL
+#define VAR_TH_FCT(x) (15.561 + 0.0046692 * (x))
+#define DELTA_BIT_FLIPPING 10
+#define S_BIT_FLIPPING 7000
+#else
+// 64-bits of post-quantum security parameters:
+#ifdef PARAM64
+#define R_BITS 11027ULL
+#define DV     67ULL
+#define T1     154ULL
+#define VAR_TH_FCT(x) (13.209 + 0.0060515 * (x))
+#define DELTA_BIT_FLIPPING 10
+#define S_BIT_FLIPPING 3000
+#endif
+#endif
+#endif
+#endif
 
 // Divide by the divider and round up to next integer:
 #define DIVIDE_AND_CEIL(x, divider)  ((x/divider) + (x % divider == 0 ? 0 : 1ULL))

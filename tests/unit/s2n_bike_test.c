@@ -16,11 +16,15 @@
 #include "s2n_test.h"
 
 #include "pq-crypto/bike/bike1_l1_kem.h"
-#include "pq-crypto/bike/utilities.h"
 
-uint32_t constant_time_compare(IN const uint8_t* a,
-                  IN const uint8_t* b,
-                  IN const uint32_t size)
+#define bike1_l1_length_secret_key 2542
+#define bike1_l1_length_public_key 2542
+#define bike1_l1_length_ciphertext 2542
+#define bike1_l1_length_shared_secret 32
+
+uint32_t constant_time_compare(const uint8_t* a,
+                  const uint8_t* b,
+                  const uint32_t size)
 {
     volatile uint8_t res = 0;
 
@@ -34,19 +38,20 @@ uint32_t constant_time_compare(IN const uint8_t* a,
 
 int main(int argc, char **argv)
 {
-    unsigned char publicKey[N_SIZE];
-    unsigned char privateKey[N_SIZE];
-    unsigned char plaintextSecret[ELL_K_SIZE];
-    unsigned char sharedSecret[ELL_K_SIZE];
-    unsigned char encryptedSecret[ELL_K_SIZE];
+    unsigned char publicKey[bike1_l1_length_public_key];
+    unsigned char privateKey[bike1_l1_length_secret_key];
+    unsigned char clientSharedSecretPlaintext[bike1_l1_length_shared_secret];
+    unsigned char serverSharedSecretPlaintext[bike1_l1_length_shared_secret];
+    unsigned char encryptedSecret[bike1_l1_length_ciphertext];
 
 
     BEGIN_TEST();
 
     EXPECT_SUCCESS(BIKE1_L1_crypto_kem_keypair(publicKey, privateKey));
-    EXPECT_SUCCESS(BIKE1_L1_crypto_kem_enc(encryptedSecret, plaintextSecret, publicKey));
-    EXPECT_SUCCESS(BIKE1_L1_crypto_kem_dec(sharedSecret, encryptedSecret, privateKey));
-    EXPECT_SUCCESS(constant_time_compare(plaintextSecret, sharedSecret, ELL_K_BITS));
+    EXPECT_SUCCESS(BIKE1_L1_crypto_kem_enc(encryptedSecret, clientSharedSecretPlaintext, publicKey));
+    EXPECT_SUCCESS(BIKE1_L1_crypto_kem_dec(serverSharedSecretPlaintext, encryptedSecret, privateKey));
+    EXPECT_TRUE(constant_time_compare(serverSharedSecretPlaintext, clientSharedSecretPlaintext, bike1_l1_length_shared_secret));
+    EXPECT_FALSE(constant_time_compare(privateKey, publicKey, bike1_l1_length_public_key));
 
     END_TEST();
 }
