@@ -17,17 +17,21 @@ SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 
 #WA for GCC 4.8.5 bug.
-EXTRA_FLAGS += -Wno-missing-braces -Wno-missing-field-initializers
-
+CFLAGS += -Wno-missing-braces -Wno-missing-field-initializers
 
 .PHONY : all
 all: libbike1_l1.so
 
 include ../../s2n.mk
 
-CFLAGS += -I$(LIBCRYPTO_ROOT)/include/
-LDFLAGS += -L../../lib/ ${CRYPTO_LDFLAGS}
+#CFLAGS += -I$(LIBCRYPTO_ROOT)/include/
+# LDFLAGS += -L../../lib/ ${CRYPTO_LDFLAGS}
 
 
 libbike1_l1.so: ${OBJS}
-	${CC} -shared -o libbike1_l1.so ${OBJS} ${CFLAGS} ${EXTRA_FLAGS} ${LDFLAGS} -lm
+	echo $(CFLAGS)
+	${CC} -shared -o libbike1_l1.so ${OBJS} ${CFLAGS} ${LDFLAGS} -lm
+
+.PHONY : clean
+clean:
+	rm *.o libbike1_l1.so

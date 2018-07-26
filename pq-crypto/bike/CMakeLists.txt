@@ -24,8 +24,3 @@ install (
         PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}"
         COMPONENT dev
 )
-
-#export(TARGETS bike1-l1 FILE "bike1-l1Targets.cmake")
-#export(PACKAGE bike1-l1)
-#
-#install(EXPORT bike1-l1Targets DESTINATION "${INSTALL_CMAKE_DIR}/bike1-l1" COMPONENT dev)
