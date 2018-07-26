@@ -140,8 +140,6 @@ _INLINE_ uint8_t print_last_block(IN const uint8_t* last_bytes,
     return 1;
 }
 
-#pragma GCC diagnostic push  // require GCC 4.6
-#pragma GCC diagnostic ignored "-Wcast-qual"
 void print_LE(IN const uint64_t *in, IN const uint32_t bits_num)
 {
     const uint32_t qw_num = bits_num/BITS_IN_QW;
@@ -175,5 +173,4 @@ void print_BE(IN const uint64_t *in, IN const uint32_t bits_num)
 
     printf("\n");
 }
-#pragma GCC diagnostic pop   // require GCC 4.6
 

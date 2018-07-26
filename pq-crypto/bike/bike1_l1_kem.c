@@ -32,18 +32,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-
-#include "bike1_l1_kem.h"
 #include "stdio.h"
 #include "string.h"
 
+#include "bike1_l1_kem.h"
 #include "parallel_hash.h"
 #include "openssl_utils.h"
 #include "decode.h"
 #include "sampling.h"
 #include "aes_ctr_prf.h"
 #include "conversions.h"
-
 
 _INLINE_ status_t encrypt(OUT ct_t* ct,
         IN const uint8_t* e,
@@ -54,7 +52,10 @@ _INLINE_ status_t encrypt(OUT ct_t* ct,
     status_t res = SUCCESS;
 
 #ifndef BIKE2
+    uint8_t c0[R_SIZE] = {0};
 #endif
+    uint8_t c1[R_SIZE] = {0};
+
     uint8_t e0[R_SIZE] = {0};
     uint8_t e1[R_SIZE] = {0};
 
@@ -170,6 +171,7 @@ int BIKE1_L1_crypto_kem_keypair(OUT unsigned char *pk, OUT unsigned char *sk)
 {
     //Convert to this implementation types
     sk_t* l_sk = (sk_t*)sk;
+    pk_t* l_pk = (pk_t*)pk;
     status_t res = SUCCESS;
 
     //For NIST DRBG_CTR.
@@ -238,22 +240,19 @@ EXIT:
     return res;
 }
 
-#pragma GCC diagnostic push  // require GCC 4.6
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wstack-protector"
 //Encapsulate - pk is the public key,
 //              ct is a key encapsulation message (ciphertext),
 //              ss is the shared secret.
 int BIKE1_L1_crypto_kem_enc(OUT unsigned char *ct,
-                            OUT unsigned char *ss,
-                            IN  const unsigned char *pk)
+        OUT unsigned char *ss,
+        IN  const unsigned char *pk)
 {
     DMSG("  Enter BIKE1_L1_crypto_kem_enc.\n");
 
     status_t res = SUCCESS;
 
     //Convert to these implementation types
-    pk_t* l_pk = (pk_t*)pk;
+    const pk_t* l_pk = (pk_t*)pk;
     ct_t* l_ct = (ct_t*)ct;
     ss_t* l_ss = (ss_t*)ss;
 
@@ -305,8 +304,8 @@ EXIT:
 //              sk is the private key,
 //              ss is the shared secret
 int BIKE1_L1_crypto_kem_dec(OUT unsigned char *ss,
-                            IN const unsigned char *ct,
-                            IN const unsigned char *sk)
+        IN const unsigned char *ct,
+        IN const unsigned char *sk)
 {
     DMSG("  Enter BIKE1_L1_crypto_kem_dec.\n");
     status_t res = SUCCESS;
@@ -359,5 +358,3 @@ EXIT:
     DMSG("  Exit BIKE1_L1_crypto_kem_dec.\n");
     return res;
 }
-#pragma GCC diagnostic pop   // require GCC 4.6
-#pragma GCC diagnostic pop   // require GCC 4.6
