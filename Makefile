@@ -46,7 +46,12 @@ include s2n.mk
 
 .PHONY : libs
 libs:
+ifdef FIPS_MODE
+	echo Skipping compilation of post-quantum algorithms in FIPS mode
+else
+	echo Not in FIPS mode, compiling post-quantum algorithms
 	$(MAKE) -C pq-crypto/bike
+endif
 	$(MAKE) -C utils
 	$(MAKE) -C error
 	$(MAKE) -C stuffer

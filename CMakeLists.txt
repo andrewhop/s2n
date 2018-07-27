@@ -130,7 +130,7 @@ target_include_directories(s2n PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_D
 target_include_directories(s2n PUBLIC $<TARGET_PROPERTY:LibCrypto::Crypto,INTERFACE_INCLUDE_DIRECTORIES>)
 
 file(GLOB TESTLIB_SRC "tests/testlib/*.c")
-file(GLOB TESTLIB_HEADERS "tests/testlib/*.h")
+file(GLOB TESTLIB_HEADERS "tests/testlib/*.h" "tests/s2n_test.h")
 
 add_library(testss2n ${TESTLIB_HEADERS} ${TESTLIB_SRC})
 target_include_directories(testss2n PRIVATE tests)
@@ -144,7 +144,7 @@ add_library(allocator_overrides SHARED ${TEST_LD_PRELOAD})
 include(CTest)
 enable_testing()
 
-file(GLOB UNITTESTS_SRC "tests/unit/*.c")
+file(GLOB UNITTESTS_SRC "tests/unit/*.c" "tests/pq-crypto/bike/*.c")
     foreach(test_case ${UNITTESTS_SRC})
     string(REGEX REPLACE ".+\\/(.+)\\.c" "\\1" test_case_name ${test_case})
     add_executable(${test_case_name} ${test_case})
