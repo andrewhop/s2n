@@ -92,7 +92,6 @@ if [[ "$S2N_LIBCRYPTO" == "openssl-1.0.2" ]]; then export LIBCRYPTO_ROOT=$OPENSS
 if [[ "$S2N_LIBCRYPTO" == "openssl-1.0.2-fips" ]]; then 
     export LIBCRYPTO_ROOT=$OPENSSL_1_0_2_FIPS_INSTALL_DIR ; 
     export S2N_TEST_IN_FIPS_MODE=1 ;
-    export FIPS_MODE=1 ;
 fi
 
 if [[ "$S2N_LIBCRYPTO" == "libressl" ]]; then export LIBCRYPTO_ROOT=$LIBRESSL_INSTALL_DIR ; fi

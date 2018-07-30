@@ -144,7 +144,7 @@ add_library(allocator_overrides SHARED ${TEST_LD_PRELOAD})
 include(CTest)
 enable_testing()
 
-file(GLOB UNITTESTS_SRC "tests/unit/*.c" "tests/pq-crypto/bike/*.c")
+file(GLOB UNITTESTS_SRC "tests/unit/*.c" "tests/pq-crypto/*.c")
     foreach(test_case ${UNITTESTS_SRC})
     string(REGEX REPLACE ".+\\/(.+)\\.c" "\\1" test_case_name ${test_case})
     add_executable(${test_case_name} ${test_case})
