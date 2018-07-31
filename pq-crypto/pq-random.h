@@ -19,14 +19,19 @@
 #include "../utils/s2n_blob.h"
 #include "pq-utils.h"
 
+#ifdef NIST_RNG_FOR_UNIT_TEST
+extern int randombytes(unsigned char *x, unsigned long long xlen);
+#else
 extern int s2n_get_private_random_data(OUT struct s2n_blob *blob);
+#endif
 
-static inline int get_random_bytes(OUT unsigned char *buffer, int num_bytes)
+static inline int get_random_bytes(OUT unsigned char *buffer, unsigned int num_bytes)
 {
+#ifdef NIST_RNG_FOR_UNIT_TEST
+    return randombytes(buffer, (unsigned long long)num_bytes);
+#else
     struct s2n_blob out = {.data = buffer,.size = num_bytes };
-    if (s2n_get_private_random_data(&out) < 0) {
-        return 0;
-    }
-    return 1;
+    return s2n_get_private_random_data(&out);
+#endif
 }
 #endif //S2N_PQ_RANDOM_H

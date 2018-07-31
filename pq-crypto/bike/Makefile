@@ -12,7 +12,7 @@
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 #
-.DEFAULT_GOAL := libbike1_l1.so
+.DEFAULT_GOAL := all
 
 include ../../s2n.mk
 
@@ -25,6 +25,13 @@ CFLAGS += -Wno-missing-braces -Wno-missing-field-initializers
 # BIKE casts raw char arrays to an internal key representation for safety and convenience in bike1_l1_kem.c
 FLAGS_TO_REMOVE := -Wcast-qual -Wstack-protector
 
+ifdef NIST_RNG_FOR_UNIT_TEST
+	CFLAGS += -DNIST_RNG_FOR_UNIT_TEST
+	LIBRARY_NAME := libbike1_l1_nist_known_answer_rng.so
+else
+	LIBRARY_NAME := libbike1_l1.so
+endif
+
 FINAL_CFLAGS := $(filter-out $(FLAGS_TO_REMOVE),$(CFLAGS))
 
 CFLAGS = $(FINAL_CFLAGS)
@@ -33,10 +40,10 @@ SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 
 .PHONY : all
-all: libbike1_l1.so
+all: $(LIBRARY_NAME)
 
-libbike1_l1.so: ${OBJS}
-	${CC} -shared -o libbike1_l1.so ${OBJS} ${CFLAGS} ${LDFLAGS} -lm
+$(LIBRARY_NAME): ${OBJS}
+	${CC} -shared -o ${LIBRARY_NAME} ${OBJS} ${CFLAGS} ${LDFLAGS} -lm
 
 .PHONY : clean
 clean:
