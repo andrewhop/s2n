@@ -54,6 +54,22 @@ file(GLOB UTILS_SRC
     "utils/*.c"
 )
 
+file(GLOB PQ_CRYPTO_HEADERS
+    "pq-crypto/*.h"
+)
+
+file(GLOB PQ_CRYPTO_SRC
+    "pq-crypto/*.c"
+)
+
+file(GLOB BIKE_HEADERS
+    "pq-crypto/bike/*.h"
+)
+
+file(GLOB BIKE_SRC
+    "pq-crypto/bike/*.c"
+)
+
 ##be nice to visual studio users
 if(MSVC)
     source_group("Header Files\\s2n\\api" FILES ${API_HEADERS})
@@ -79,8 +95,6 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
 else()
     set(OS_LIBS pthread dl rt)
 endif()
-
-add_subdirectory(pq-crypto/bike)
 
 file(GLOB S2N_HEADERS
     ${API_HEADERS}
@@ -129,6 +143,11 @@ target_include_directories(s2n PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_D
 target_include_directories(s2n PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/api> $<INSTALL_INTERFACE:include>)
 target_include_directories(s2n PUBLIC $<TARGET_PROPERTY:LibCrypto::Crypto,INTERFACE_INCLUDE_DIRECTORIES>)
 
+add_library(bike1-l1 ${BIKE_HEADERS} ${PQ_CRYPTO_HEADERS} ${UTILS} ${BIKE_SRC} ${PQ_CRYPTO_SRC})
+target_compile_options(bike1-l1 PUBLIC -std=c99 -Wno-missing-braces -Wno-missing-field-initializers -DBIKE1=1 -DPARAM64=1)
+target_include_directories(bike1-l1 PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+
 file(GLOB TESTLIB_SRC "tests/testlib/*.c")
 file(GLOB TESTLIB_HEADERS "tests/testlib/*.h" "tests/s2n_test.h")
 
@@ -148,7 +167,7 @@ file(GLOB UNITTESTS_SRC "tests/unit/*.c" "tests/bike_known_answer/s2n_bike1_l1_k
     foreach(test_case ${UNITTESTS_SRC})
     string(REGEX REPLACE ".+\\/(.+)\\.c" "\\1" test_case_name ${test_case})
     add_executable(${test_case_name} ${test_case})
-    target_link_libraries(${test_case_name} PRIVATE testss2n PRIVATE m pthread)
+    target_link_libraries(${test_case_name} PRIVATE testss2n PRIVATE m pthread PRIVATE bike1-l1)
     target_include_directories(${test_case_name} PRIVATE api)
     target_include_directories(${test_case_name} PRIVATE ./)
     target_include_directories(${test_case_name} PRIVATE tests)
@@ -160,12 +179,6 @@ file(GLOB UNITTESTS_SRC "tests/unit/*.c" "tests/bike_known_answer/s2n_bike1_l1_k
         ${test_case_name}
     PROPERTY
         ENVIRONMENT LD_PRELOAD=$<TARGET_FILE:allocator_overrides>)
-
-    if(${test_case_name} STREQUAL "s2n_bike1_l1_known_answer_test")
-        target_link_libraries(${test_case_name} PRIVATE bike1-l1-nist-known-answer-rng)
-    else()
-        target_link_libraries(${test_case_name} PRIVATE bike1-l1)
-    endif()
 endforeach(test_case)
 
 add_executable(s2nc "bin/s2nc.c" "bin/echo.c")
