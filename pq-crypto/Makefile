@@ -15,8 +15,6 @@
 .PHONY : all
 all:
 	$(MAKE) -C bike
-	$(RM) bike/*.o
-	$(MAKE) -C bike NIST_RNG_FOR_UNIT_TEST=1
 
 include ../s2n.mk
 

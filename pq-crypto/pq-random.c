@@ -12,17 +12,25 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+#include <sys/param.h>
 
-#ifndef S2N_PQ_RANDOM_H
-#define S2N_PQ_RANDOM_H
+#include "pq-random.h"
+#include "utils/s2n_mem.h"
 
-#include "utils/s2n_blob.h"
-#include "pq-utils.h"
 
-extern int s2n_get_private_random_data(OUT struct s2n_blob *blob);
+static int (*random_data_generator)(struct s2n_blob *) = &s2n_get_private_random_data;
 
-int get_random_bytes(OUT unsigned char *buffer, unsigned int num_bytes);
+int initialize_pq_crypto_generator(int (*generator_ptr)(struct s2n_blob *))
+{
+    if (generator_ptr == NULL) {
+        return -1;
+    }
+    random_data_generator = generator_ptr;
+    return 0;
+}
 
-int initialize_pq_crypto_generator(int (*generator_ptr)(struct s2n_blob *));
-
-#endif //S2N_PQ_RANDOM_H
+int get_random_bytes(OUT unsigned char *buffer, unsigned int num_bytes)
+{
+    struct s2n_blob out = {.data = buffer,.size = num_bytes };
+    return random_data_generator(&out);
+}
