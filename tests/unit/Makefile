@@ -32,7 +32,7 @@ all: $(UNIT_TESTS)
 include ../../s2n.mk
 
 CRUFT += $(wildcard *_test)
-LIBS += -lm -ls2n_pq_crypto -ltests2n -ls2n
+LIBS += -lm -ldl -ls2n_pq_crypto -ltests2n -ls2n
 
 # Suppress the unreachable code warning, because tests involve what should be
 # unreachable code
