@@ -16,26 +16,23 @@
 
 include ../../s2n.mk
 
-#WA for GCC 4.8.5 bug.
-CFLAGS += -Wno-missing-braces -Wno-missing-field-initializers
-
 # BIKE casts raw char arrays to an internal key representation for safety and convenience in bike1_l1_kem.c
-FLAGS_TO_REMOVE := -Wcast-qual -Wstack-protector
+FLAGS_TO_REMOVE := -pedantic
 
 FINAL_CFLAGS := $(filter-out $(FLAGS_TO_REMOVE),$(CFLAGS))
 
 CFLAGS=$(FINAL_CFLAGS)
 CFLAGS+=-I../../
 
-SRCS=$(wildcard *.c)
+SRCS=fp_generic.c P503.c sike_p503_kem.c fips202.c
 OBJS=$(SRCS:.c=.o)
 
 .PHONY : all
-all: libbike1_l1.a
+all: libsike_p503.a
 
-libbike1_l1.a: ${OBJS}
-	$(AR) cru libbike1_l1.a ${OBJS}
-	$(RANLIB) libbike1_l1.a
+libsike_p503.a: ${OBJS}
+	$(AR) cru libsike_p503.a ${OBJS}
+	$(RANLIB) libsike_p503.a
 
 .PHONY : clean
 clean:

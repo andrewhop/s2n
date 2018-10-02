@@ -43,6 +43,8 @@
 #define ELL_K_BITS  256ULL
 #define ELL_K_SIZE (ELL_K_BITS/8)
 
+#define BIKE1
+#define PARAM64
 
 ////////////////////////////////////////////
 // Implicit Parameters (do NOT edit below)

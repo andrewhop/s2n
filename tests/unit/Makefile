@@ -32,17 +32,17 @@ all: $(UNIT_TESTS)
 include ../../s2n.mk
 
 CRUFT += $(wildcard *_test)
-LIBS += -lm -lbike1_l1 -ltests2n -ls2n
+LIBS += -lm -ls2n_pq_crypto -ltests2n -ls2n
 
 # Suppress the unreachable code warning, because tests involve what should be
 # unreachable code
 CFLAGS += -Wno-unreachable-code -I$(LIBCRYPTO_ROOT)/include/ -I../../ -I../../api/ -I../../pq-crypto/
-LDFLAGS += -L../../lib/ ${CRYPTO_LDFLAGS} -L../testlib/ -L../../pq-crypto/bike/ ${LIBS} ${CRYPTO_LIBS}
+LDFLAGS += -L../../lib/ ${CRYPTO_LDFLAGS} -L../testlib/ -L../../pq-crypto ${LIBS} ${CRYPTO_LIBS}
 
 $(UNIT_TESTS)::
 	@${CC} ${CFLAGS} -o $@ $@.c ${LDFLAGS} 2>&1
 	@DYLD_LIBRARY_PATH="../../lib/:../testlib/:$(LIBCRYPTO_ROOT)/lib:$$DYLD_LIBRARY_PATH" \
-	LD_LIBRARY_PATH="../../lib/:../testlib/:$(LIBCRYPTO_ROOT)/lib:$$LD_LIBRARY_PATH:../../pq-crypto/bike/" \
+	LD_LIBRARY_PATH="../../lib/:../testlib/:$(LIBCRYPTO_ROOT)/lib:$$LD_LIBRARY_PATH:../../pq-crypto" \
 	LD_PRELOAD="../LD_PRELOAD/allocator_overrides.so" \
 	./$@
 

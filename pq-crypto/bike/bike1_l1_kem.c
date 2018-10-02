@@ -252,7 +252,7 @@ int BIKE1_L1_crypto_kem_enc(OUT unsigned char *ct,
     status_t res = SUCCESS;
 
     //Convert to these implementation types
-    const pk_t* l_pk = (pk_t*)pk;
+    const pk_t* l_pk = (const pk_t*)pk;
     ct_t* l_ct = (ct_t*)ct;
     ss_t* l_ss = (ss_t*)ss;
 
@@ -311,8 +311,8 @@ int BIKE1_L1_crypto_kem_dec(OUT unsigned char *ss,
     status_t res = SUCCESS;
 
     //Convert to this implementation types
-    const sk_t* l_sk = (sk_t*)sk;
-    const ct_t* l_ct = (ct_t*)ct;
+    const sk_t* l_sk = (const sk_t*)sk;
+    const ct_t* l_ct = (const ct_t*)ct;
     ss_t* l_ss = (ss_t*)ss;
 
     DMSG("  Converting to compact rep.\n");
