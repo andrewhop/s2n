@@ -145,7 +145,7 @@ void print_LE(IN const uint64_t *in, IN const uint32_t bits_num)
     const uint32_t qw_num = bits_num/BITS_IN_QW;
 
     //Print the MSB QW
-    uint32_t qw_pos = print_last_block((uint8_t*)&in[qw_num], bits_num, 1);
+    uint32_t qw_pos = print_last_block((const uint8_t*)&in[qw_num], bits_num, 1);
 
     //Print each 8 bytes separated by space (if required)
     for(int i = ((int)qw_num)-1; i >= 0; i--, qw_pos++)
@@ -169,7 +169,7 @@ void print_BE(IN const uint64_t *in, IN const uint32_t bits_num)
     }
 
     //Print the MSB QW
-    print_last_block((uint8_t*)&in[qw_num], bits_num, 0);
+    print_last_block((const uint8_t*)&in[qw_num], bits_num, 0);
 
     printf("\n");
 }
