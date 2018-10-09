@@ -56,14 +56,7 @@ libs:
 
 .PHONY : bin
 bin: libs
-	$(MAKE) -C pq-crypto
 	$(MAKE) -C bin
-	$(MAKE) -C utils
-	$(MAKE) -C error
-	$(MAKE) -C stuffer
-	$(MAKE) -C crypto
-	$(MAKE) -C tls
-	$(MAKE) -C lib
 
 .PHONY : integration
 integration: bin
