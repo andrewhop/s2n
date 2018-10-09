@@ -60,6 +60,8 @@ set(CMAKE_C_FLAGS_DEBUGOPT "")
 target_compile_options(s2n_pq_crypto PRIVATE -std=c99 -Wall -Werror -Wimplicit -Wunused -Wcomment -Wchar-subscripts -Wuninitialized -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings -Wno-deprecated-declarations -Wno-unknown-pragmas -Wformat-security)
 target_compile_options(s2n_pq_crypto PUBLIC -fPIC)
 
+target_compile_definitions(s2n_pq_crypto PRIVATE -DBIKE_VER=1 -DLEVEL=1 -DCONSTANT_TIME -DUSE_OPENSSL)
+
 # Copied from parent CmakeLists.txt
 target_compile_definitions(s2n_pq_crypto PRIVATE -D_POSIX_C_SOURCE=200809L)
 if(CMAKE_BUILD_TYPE MATCHES Release)

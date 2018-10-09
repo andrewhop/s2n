@@ -93,7 +93,7 @@ int main(int argc, char **argv, char **envp) {
         // Test the client and server got the same value
         EXPECT_BYTEARRAY_EQUAL(client_shared_secret, server_shared_secret, BIKE1_L1_SHARED_SECRET_BYTES);
 
-        // Co\mpare the KAT values
+        // Compare the KAT values
         EXPECT_BYTEARRAY_EQUAL(pk_answer, pk, BIKE1_L1_PUBLIC_KEY_BYTES);
         EXPECT_BYTEARRAY_EQUAL(sk_answer, sk, BIKE1_L1_SECRET_KEY_BYTES);
         EXPECT_BYTEARRAY_EQUAL(ct_answer, ct, BIKE1_L1_CIPHERTEXT_BYTES);
