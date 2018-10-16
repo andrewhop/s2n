@@ -137,7 +137,7 @@ status_t generate_sparse_fake_rep(OUT uint64_t *a,
     status_t res = SUCCESS;
     uint64_t ctr = 0;
     uint32_t real_wlist[DV] = {0};
-	const uint32_t len = R_BITS;
+    const uint32_t len = R_BITS;
 
     // Initialize lists
     memset(wlist, 0, sizeof(idx_t)*FAKE_DV);

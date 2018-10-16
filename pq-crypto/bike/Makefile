@@ -22,13 +22,7 @@ CFLAGS += -Wno-missing-braces -Wno-missing-field-initializers
 # Currently only BIKE1_L1 is supportted in the S2N library!
 CFLAGS += -DBIKE_VER=1 -DLEVEL=1 -DCONSTANT_TIME -DUSE_OPENSSL
 
-# BIKE casts raw char arrays to an internal key representation for safety and convenience in bike1_l1_kem.c
-#FLAGS_TO_REMOVE := -Wstack-protector
-
-FINAL_CFLAGS := $(filter-out $(FLAGS_TO_REMOVE),$(CFLAGS))
-
-CFLAGS=$(FINAL_CFLAGS)
-CFLAGS+=-I../../
+CFLAGS += -I../../
 
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
