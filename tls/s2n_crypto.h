@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "tls/s2n_config.h"
-
 #include "crypto/s2n_certificate.h"
 #include "crypto/s2n_cipher.h"
 #include "crypto/s2n_hmac.h"
@@ -26,6 +24,9 @@
 #include "crypto/s2n_dhe.h"
 #include "crypto/s2n_ecc.h"
 
+#include "tls/s2n_config.h"
+#include "tls/s2n_kem_params.h"
+#include "tls/s2n_kem.h"
 
 #define S2N_TLS_SECRET_LEN             48
 #define S2N_TLS_RANDOM_DATA_LEN        32
@@ -55,10 +56,13 @@
 #define S2N_TLS_SESSION_ID_MAX_LEN     32
 
 struct s2n_crypto_parameters {
+    // data1 union
+    // data2
     struct s2n_pkey server_public_key;
     struct s2n_pkey client_public_key;
     struct s2n_dh_params server_dh_params;
     struct s2n_ecc_params server_ecc_params;
+    struct s2n_kem_params kem_params;
     struct s2n_cert_chain_and_key *server_cert_chain;
     s2n_hash_algorithm conn_hash_alg;
     s2n_signature_algorithm conn_sig_alg;
@@ -68,6 +72,8 @@ struct s2n_crypto_parameters {
     s2n_signature_algorithm client_cert_sig_alg;
 
     struct s2n_cipher_suite *cipher_suite;
+    // struct kest for hybrid params and s2n_kex methods from cipher suite
+
     struct s2n_session_key client_key;
     struct s2n_session_key server_key;
 

@@ -31,6 +31,6 @@ int initialize_pq_crypto_generator(int (*generator_ptr)(struct s2n_blob *))
 
 int get_random_bytes(OUT unsigned char *buffer, unsigned int num_bytes)
 {
-    struct s2n_blob out = {.data = buffer,.size = num_bytes };
+    struct s2n_blob out = {.data = buffer, .size = num_bytes };
     return random_data_generator(&out);
 }

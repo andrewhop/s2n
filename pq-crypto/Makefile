@@ -14,19 +14,21 @@
 #
 .DEFAULT_GOAL := all
 
-INTERNAL_LIBS =  bike/libbike1_l1.a
-INTERNAL_LIBS += sike/libsike_p503.a
+#INTERNAL_LIBS =  bike/libbike1_l1.a
+#INTERNAL_LIBS += sike/libsike_p503.a
 
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 
 .PHONY : all
-all: libs2n_pq_crypto.so
+all: libs2n_pq_crypto.a
 
-libs2n_pq_crypto.so: ${OBJS}
+libs2n_pq_crypto.a: ${OBJS}
 	$(MAKE) -C bike
 	$(MAKE) -C sike
-	${CC} -shared -o libs2n_pq_crypto.so ${OBJS} -Wl,--whole-archive ${INTERNAL_LIBS} -Wl,--no-whole-archive -L../../ ${CFLAGS} ${LDFLAGS} -lm
+	#$(AR) -rcT libs2n_pq_crypto.a ${INTERNAL_LIBS}
+	$(AR) cru libs2n_pq_crypto.a bike/*.o sike/*.o
+	$(RANLIB) libs2n_pq_crypto.a
 
 include ../s2n.mk
 

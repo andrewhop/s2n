@@ -13,17 +13,21 @@
 # permissions and limitations under the License.
 #
 
-OBJS = $(wildcard ../utils/*.o ../stuffer/*.o ../tls/*.o ../iana/*.o ../crypto/*.o ../error/*.o)
+#OBJS = $(wildcard ../utils/*.o ../stuffer/*.o ../tls/*.o ../iana/*.o ../crypto/*.o ../error/*.o)
+OBJS = $(wildcard ../utils/*.o ../stuffer/*.o ../tls/*.o ../iana/*.o ../crypto/*.o ../error/*.o ../pq-crypto/*.o ../pq-crypto/bike/*.o ../pq-crypto/sike/*.o)
 
 .PHONY : all
 all: libs2n.a libs2n.so libs2n.dylib
 
 include ../s2n.mk
 
+#CRYPTO_LIBS += -ls2n_pq_crypto
+
 libs2n.a: ${OBJS}
 	$(AR) cru libs2n.a ${OBJS}
 	$(RANLIB) libs2n.a
 
+# need to include headers, link with the archive after changing pq-crypto
 libs2n.so: ${OBJS}
 	${CC} -shared -o libs2n.so ${OBJS} ${LIBS} -L${LIBCRYPTO_ROOT}/lib ${CRYPTO_LIBS}
 

@@ -15,6 +15,7 @@
 
 #include "tls/s2n_server_key_exchange.h"
 #include "tls/s2n_client_key_exchange.h"
+#include "tls/s2n_kem.h"
 #include "tls/s2n_kex.h"
 #include "tls/s2n_cipher_suites.h"
 #include "utils/s2n_safety.h"
@@ -53,6 +54,24 @@ static int check_ecc(const struct s2n_connection *conn)
     return conn->secure.server_ecc_params.negotiated_curve != NULL;
 }
 
+static int check_bike(const struct s2n_connection *conn)
+{
+    return 1; // TODO: put something here
+}
+
+static int check_sike(const struct s2n_connection *conn)
+{
+    return 1; // TODO: put something here
+}
+
+static int check_hybrid(const struct s2n_connection *conn)
+{
+    const struct s2n_kex *hybrid_kem_1 = *conn->secure.cipher_suite->key_exchange_alg->additional_data.hybrid;
+    const struct s2n_kex *hybrid_kem_2 = hybrid_kem_1 + 1;
+    return hybrid_kem_1->connection_supported(conn) && hybrid_kem_2->connection_supported(conn);
+}
+
+
 const struct s2n_kex s2n_rsa = {
         .is_ephemeral = 0,
         .server_extension_size = 0,
@@ -61,6 +80,8 @@ const struct s2n_kex s2n_rsa = {
         .server_key_send = &s2n_rsa_server_send_key,
         .client_key_recv = &s2n_rsa_client_key_recv,
         .client_key_send = &s2n_rsa_client_key_send,
+        .additional_data.kem = NULL,
+        .tls_prf = &s2n_prf_master_secret,
 };
 
 const struct s2n_kex s2n_dhe = {
@@ -72,6 +93,8 @@ const struct s2n_kex s2n_dhe = {
         .server_key_send = &s2n_dhe_server_send_params,
         .client_key_recv = &s2n_dhe_client_key_recv,
         .client_key_send = &s2n_dhe_client_key_send,
+        .additional_data.kem = NULL,
+        .tls_prf = &s2n_prf_master_secret,
 };
 
 const struct s2n_kex s2n_ecdhe = {
@@ -83,6 +106,58 @@ const struct s2n_kex s2n_ecdhe = {
         .server_key_send = &s2n_ecdhe_server_send_params,
         .client_key_recv = &s2n_ecdhe_client_key_recv,
         .client_key_send = &s2n_ecdhe_client_key_send,
+        .additional_data.kem = NULL,
+        .tls_prf = &s2n_prf_master_secret,
+};
+
+const struct s2n_kex s2n_bike = {
+        .is_ephemeral = 1,
+        .server_extension_size = 0,
+        .write_server_extensions = &no_extension,
+        .connection_supported = &check_bike,
+        .server_key_recv = &s2n_kem_server_recv_key,
+        .server_key_send = &s2n_kem_server_send_key,
+        .client_key_recv = &s2n_kem_client_recv_key,
+        .client_key_send = &s2n_kem_client_send_key,
+        .additional_data.kem = &bike1_level1,
+};
+
+const struct s2n_kex s2n_sike = {
+        .is_ephemeral = 1,
+        .server_extension_size = 0,
+        .write_server_extensions = &no_extension,
+        .connection_supported = &check_sike,
+        .server_key_recv = &s2n_kem_server_recv_key,
+        .server_key_send = &s2n_kem_server_send_key,
+        .client_key_recv = &s2n_kem_client_recv_key,
+        .client_key_send = &s2n_kem_client_send_key,
+        .additional_data.kem = &sikep503,
+};
+
+const struct s2n_kex s2n_hybrid_ecdhe_bike = {
+        .is_ephemeral = 1,
+        .server_extension_size = 6,
+        .write_server_extensions = &write_ecc_extension,
+        .connection_supported = &check_hybrid,
+        .server_key_recv = &s2n_hybrid_server_recv_params,
+        .server_key_send = &s2n_hybrid_server_send_params,
+        .client_key_recv = &s2n_hybrid_client_recv_params,
+        .client_key_send = &s2n_hybrid_client_send_params,
+        .additional_data.hybrid = {&s2n_ecdhe, &s2n_bike},
+        .tls_prf = &s2n_hybrid_prf_master_secret,
+};
+
+const struct s2n_kex s2n_hybrid_ecdhe_sike = {
+        .is_ephemeral = 1,
+        .server_extension_size = 6,
+        .write_server_extensions = &write_ecc_extension,
+        .connection_supported = &check_hybrid,
+        .server_key_recv = &s2n_hybrid_server_recv_params,
+        .server_key_send = &s2n_hybrid_server_send_params,
+        .client_key_recv = &s2n_hybrid_client_recv_params,
+        .client_key_send = &s2n_hybrid_client_send_params,
+        .additional_data.hybrid = {&s2n_ecdhe, &s2n_sike},
+        .tls_prf = &s2n_hybrid_prf_master_secret,
 };
 
 int s2n_kex_server_extension_size(const struct s2n_kex *kex)
@@ -110,23 +185,29 @@ int s2n_kex_is_ephemeral(const struct s2n_kex *kex)
 int s2n_kex_server_key_recv(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *data_to_verify)
 {
     notnull_check(kex->server_key_recv);
-    return kex->server_key_recv(conn, data_to_verify);
+    return kex->server_key_recv(kex, conn, data_to_verify);
 }
 
 int s2n_kex_server_key_send(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *data_to_sign)
 {
     notnull_check(kex->server_key_send);
-    return kex->server_key_send(conn, data_to_sign);
+    return kex->server_key_send(kex, conn, data_to_sign);
 }
 
 int s2n_kex_client_key_recv(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     notnull_check(kex->client_key_recv);
-    return kex->client_key_recv(conn, shared_key);
+    return kex->client_key_recv(kex, conn, shared_key);
 }
 
 int s2n_kex_client_key_send(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     notnull_check(kex->client_key_send);
-    return kex->client_key_send(conn, shared_key);
+    return kex->client_key_send(kex, conn, shared_key);
+}
+
+int s2n_kex_tls_prf(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *premaster_secret)
+{
+    notnull_check(kex->tls_prf);
+    return kex->tls_prf(conn, premaster_secret);
 }

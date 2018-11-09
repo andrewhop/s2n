@@ -17,6 +17,7 @@
 
 #include "error/s2n_errno.h"
 
+#include "tls/s2n_kem.h"
 #include "tls/s2n_cipher_suites.h"
 #include "tls/s2n_connection.h"
 #include "tls/s2n_kex.h"
@@ -31,10 +32,10 @@
 #include "utils/s2n_safety.h"
 #include "utils/s2n_random.h"
 
-static int calculate_keys(struct s2n_connection *conn, struct s2n_blob *shared_key)
+static int calculate_keys(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     /* Turn the pre-master secret into a master secret */
-    GUARD(s2n_prf_master_secret(conn, shared_key));
+    GUARD(s2n_kex_tls_prf(kex, conn, shared_key));
     /* Erase the pre-master secret */
     GUARD(s2n_blob_zero(shared_key));
     if (shared_key->allocated) {
@@ -49,7 +50,7 @@ static int calculate_keys(struct s2n_connection *conn, struct s2n_blob *shared_k
     return 0;
 }
 
-int s2n_rsa_client_key_recv(struct s2n_connection *conn, struct s2n_blob *shared_key)
+int s2n_rsa_client_key_recv(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     struct s2n_stuffer *in = &conn->handshake.io;
     uint8_t client_protocol_version[S2N_TLS_PROTOCOL_VERSION_LEN];
@@ -88,7 +89,7 @@ int s2n_rsa_client_key_recv(struct s2n_connection *conn, struct s2n_blob *shared
     return 0;
 }
 
-int s2n_dhe_client_key_recv(struct s2n_connection *conn, struct s2n_blob *shared_key)
+int s2n_dhe_client_key_recv(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     struct s2n_stuffer *in = &conn->handshake.io;
 
@@ -99,7 +100,7 @@ int s2n_dhe_client_key_recv(struct s2n_connection *conn, struct s2n_blob *shared
     return 0;
 }
 
-int s2n_ecdhe_client_key_recv(struct s2n_connection *conn, struct s2n_blob *shared_key)
+int s2n_ecdhe_client_key_recv(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     struct s2n_stuffer *in = &conn->handshake.io;
 
@@ -117,11 +118,11 @@ int s2n_client_key_recv(struct s2n_connection *conn)
 
     GUARD(s2n_kex_client_key_recv(key_exchange, conn, &shared_key));
 
-    GUARD(calculate_keys(conn, &shared_key));
+    GUARD(calculate_keys(key_exchange, conn, &shared_key));
     return 0;
 }
 
-int s2n_dhe_client_key_send(struct s2n_connection *conn, struct s2n_blob *shared_key)
+int s2n_dhe_client_key_send(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     struct s2n_stuffer *out = &conn->handshake.io;
     GUARD(s2n_dh_compute_shared_secret_as_client(&conn->secure.server_dh_params, out, shared_key));
@@ -131,7 +132,7 @@ int s2n_dhe_client_key_send(struct s2n_connection *conn, struct s2n_blob *shared
     return 0;
 }
 
-int s2n_ecdhe_client_key_send(struct s2n_connection *conn, struct s2n_blob *shared_key)
+int s2n_ecdhe_client_key_send(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     struct s2n_stuffer *out = &conn->handshake.io;
     GUARD(s2n_ecc_compute_shared_secret_as_client(&conn->secure.server_ecc_params, out, shared_key));
@@ -141,7 +142,7 @@ int s2n_ecdhe_client_key_send(struct s2n_connection *conn, struct s2n_blob *shar
     return 0;
 }
 
-int s2n_rsa_client_key_send(struct s2n_connection *conn, struct s2n_blob *shared_key)
+int s2n_rsa_client_key_send(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     uint8_t client_protocol_version[S2N_TLS_PROTOCOL_VERSION_LEN];
     client_protocol_version[0] = conn->client_protocol_version / 10;
@@ -182,6 +183,82 @@ int s2n_client_key_send(struct s2n_connection *conn)
 
     GUARD(s2n_kex_client_key_send(key_exchange, conn, &shared_key));
 
-    GUARD(calculate_keys(conn, &shared_key));
+    GUARD(calculate_keys(key_exchange, conn, &shared_key));
+    return 0;
+}
+
+int s2n_kem_client_recv_key(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
+{
+    struct s2n_stuffer *in = &conn->handshake.io;
+    uint16_t ciphertext_length;
+
+    GUARD(s2n_stuffer_read_uint16(in, &ciphertext_length));
+    S2N_ERROR_IF(ciphertext_length > s2n_stuffer_data_available(in), S2N_ERR_BAD_MESSAGE);
+    struct s2n_blob ciphertext = {.size = ciphertext_length, .data = s2n_stuffer_raw_read(in, ciphertext_length)};
+    notnull_check(ciphertext.data);
+
+    s2n_kem_decrypt_shared_secret(kex->additional_data.kem, &conn->secure.kem_params, shared_key, &ciphertext);
+
+    GUARD(s2n_free(&conn->secure.kem_params.private_key));
+
+    return 0;
+}
+
+int s2n_kem_client_send_key(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
+{
+    struct s2n_stuffer *out = &conn->handshake.io;
+
+    struct s2n_blob ciphertext = {0};
+    s2n_kem_generate_shared_secret(kex->additional_data.kem, &conn->secure.kem_params, shared_key, &ciphertext);
+
+
+    GUARD(s2n_stuffer_write_uint16(out, ciphertext.size));
+    GUARD(s2n_stuffer_write(out, &ciphertext));
+    return 0;
+}
+
+int s2n_hybrid_client_recv_params(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
+{
+
+    const struct s2n_kex *hybrid_kem_1 = *kex->additional_data.hybrid;
+    const struct s2n_kex *hybrid_kem_2 = hybrid_kem_1 + 1;
+
+    struct s2n_blob shared_key_1 = {0}; // fix name
+    GUARD(s2n_kex_client_key_recv(hybrid_kem_1, conn, &shared_key_1));
+
+    struct s2n_blob shared_key_2 = {0};
+    GUARD(s2n_kex_client_key_recv(hybrid_kem_2, conn, &shared_key_2));
+
+    // The shared key for the PRF is ecdhe_key || kem_key
+    s2n_alloc(shared_key, shared_key_1.size + shared_key_2.size);
+    memcpy_check(shared_key->data, shared_key_1.data, shared_key_1.size);
+    memcpy_check(shared_key->data + shared_key_1.size, shared_key_2.data, shared_key_2.size);
+
+    GUARD(s2n_free(&shared_key_1));
+    GUARD(s2n_free(&shared_key_2));
+
+    return 0;
+}
+
+int s2n_hybrid_client_send_params(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
+{
+    // key_exchange_alg->hybrid is an array of 2 pointers to s2n_kex's
+    const struct s2n_kex *hybrid_kem_1 = *conn->secure.cipher_suite->key_exchange_alg->additional_data.hybrid;
+    const struct s2n_kex *hybrid_kem_2 = hybrid_kem_1 + 1;
+
+    struct s2n_blob shared_key_1 = {0};
+    GUARD(s2n_kex_client_key_send(hybrid_kem_1, conn, &shared_key_1));
+
+    struct s2n_blob shared_key_2 = {0};
+    GUARD(s2n_kex_client_key_send(hybrid_kem_2, conn, &shared_key_2));
+
+    // The shared key for the PRF is ecdhe_key || kem_key
+    s2n_alloc(shared_key, shared_key_1.size + shared_key_2.size);
+    memcpy_check(shared_key->data, shared_key_1.data, shared_key_1.size);
+    memcpy_check(shared_key->data + shared_key_2.size, shared_key_2.data, shared_key_2.size);
+
+    GUARD(s2n_free(&shared_key_1));
+    GUARD(s2n_free(&shared_key_2));
+
     return 0;
 }

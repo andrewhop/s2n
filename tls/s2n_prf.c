@@ -375,6 +375,25 @@ int s2n_prf_master_secret(struct s2n_connection *conn, struct s2n_blob *premaste
     return s2n_prf(conn, premaster_secret, &label, &client_random, &server_random, &master_secret);
 }
 
+int s2n_hybrid_prf_master_secret(struct s2n_connection *conn, struct s2n_blob *premaster_secret)
+{
+    struct s2n_blob client_random, server_random, master_secret;
+    struct s2n_blob label = {0};
+    uint8_t master_secret_label[] = "hybrid master secret";
+
+    client_random.data = conn->secure.client_random;
+    client_random.size = sizeof(conn->secure.client_random);
+    server_random.data = conn->secure.server_random;
+    server_random.size = sizeof(conn->secure.server_random);
+    master_secret.data = conn->secure.master_secret;
+    master_secret.size = sizeof(conn->secure.master_secret);
+    label.data = master_secret_label;
+    label.size = sizeof(master_secret_label) - 1;
+
+    // TODO: get client key exchange message from connection and pass it in with client and server random
+    return s2n_prf(conn, premaster_secret, &label, &client_random, &server_random, &master_secret);
+}
+
 static int s2n_sslv3_finished(struct s2n_connection *conn, uint8_t prefix[4], struct s2n_hash_state *md5, struct s2n_hash_state *sha1, uint8_t * out)
 {
     uint8_t xorpad1[48] =

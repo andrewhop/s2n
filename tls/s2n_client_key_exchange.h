@@ -16,6 +16,7 @@
 #pragma once
 
 #include "tls/s2n_connection.h"
+#include "tls/s2n_kex.h"
 #include "utils/s2n_blob.h"
 
 /*
@@ -27,9 +28,11 @@
  * data_to_verify: out parameter that is the data required to be added to the signature hash to be used for verifying
  * the data
  */
-int s2n_dhe_client_key_send(struct s2n_connection *conn, struct s2n_blob *shared_key);
-int s2n_ecdhe_client_key_send(struct s2n_connection *conn, struct s2n_blob *shared_key);
-int s2n_rsa_client_key_send(struct s2n_connection *conn, struct s2n_blob *shared_key);
+int s2n_dhe_client_key_send(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
+int s2n_ecdhe_client_key_send(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
+int s2n_rsa_client_key_send(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
+int s2n_kem_client_send_key(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
+int s2n_hybrid_client_send_params(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
 
 /*
  * The below methods are used to perform the specific key exchange algorithm including writing data to the connection.
@@ -39,6 +42,8 @@ int s2n_rsa_client_key_send(struct s2n_connection *conn, struct s2n_blob *shared
  * conn: in parameter which is the current connection
  * data_to_sign: out parameter that is the data required to be added to the signature hash to be used for signing
  */
-int s2n_dhe_client_key_recv(struct s2n_connection *conn, struct s2n_blob *shared_key);
-int s2n_ecdhe_client_key_recv(struct s2n_connection *conn, struct s2n_blob *shared_key);
-int s2n_rsa_client_key_recv(struct s2n_connection *conn, struct s2n_blob *shared_key);
+int s2n_dhe_client_key_recv(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
+int s2n_ecdhe_client_key_recv(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
+int s2n_rsa_client_key_recv(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
+int s2n_kem_client_recv_key(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
+int s2n_hybrid_client_recv_params(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
