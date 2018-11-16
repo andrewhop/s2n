@@ -50,6 +50,8 @@ struct s2n_kem {
     int (*generate_keypair)(unsigned char *public_key, unsigned char *private_key);
     int (*encrypt)(unsigned char *ciphertext, unsigned char *shared_secret,  const unsigned char *public_key);
     int (*decrypt)(unsigned char *shared_secret, const unsigned char *ciphertext, const unsigned char *private_key);
+    // server pick params function here
+    // client send params
 };
 
 extern const struct s2n_kem bike1_level1;
@@ -62,3 +64,5 @@ extern int s2n_kem_generate_shared_secret(const struct s2n_kem *kem, struct s2n_
 
 extern int s2n_kem_decrypt_shared_secret(const struct s2n_kem *kem, struct s2n_kem_params *params,
                                          struct s2n_blob *shared_secret, struct s2n_blob *ciphertext);
+
+extern int s2n_kem_find_supported_named_kem(struct s2n_blob *kem_names, const int **matching_kem);

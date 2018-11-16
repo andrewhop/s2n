@@ -219,7 +219,7 @@ int s2n_kem_server_recv_key(const struct s2n_kex *kex, struct s2n_connection *co
     // the server sends the named KEM again and this must match what was agreed upon during server hello
     uint8_t named_kem;
     GUARD(s2n_stuffer_read_uint8(in, &named_kem));
-    eq_check(named_kem, kex->additional_data.kem->named_kem);
+    eq_check(named_kem, kex->additional_data.kem->named_kem); //
 
     GUARD(s2n_stuffer_read_uint16(in, &key_length));
     S2N_ERROR_IF(key_length > s2n_stuffer_data_available(in), S2N_ERR_BAD_MESSAGE);

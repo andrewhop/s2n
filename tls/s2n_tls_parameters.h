@@ -71,6 +71,8 @@
 #define TLS_EXTENSION_SCT_LIST             18
 #define TLS_EXTENSION_RENEGOTIATION_INFO   65281
 #define TLS_EXTENSION_SESSION_TICKET       35
+#define TLS_EXTENSION_BIKE                 65282
+#define TLS_EXTENSION_SIKE                 65283
 
 /* TLS Signature Algorithms - RFC 5246 7.4.1.4.1*/
 #define TLS_SIGNATURE_ALGORITHM_ANONYMOUS   0

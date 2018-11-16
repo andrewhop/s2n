@@ -357,7 +357,7 @@ static int s2n_prf(struct s2n_connection *conn, struct s2n_blob *secret, struct 
     return 0;
 }
 
-int s2n_prf_master_secret(struct s2n_connection *conn, struct s2n_blob *premaster_secret)
+int s2n_tls_prf_master_secret(struct s2n_connection *conn, struct s2n_blob *premaster_secret)
 {
     struct s2n_blob client_random, server_random, master_secret;
     struct s2n_blob label = {0};
@@ -381,6 +381,7 @@ int s2n_hybrid_prf_master_secret(struct s2n_connection *conn, struct s2n_blob *p
     struct s2n_blob label = {0};
     uint8_t master_secret_label[] = "hybrid master secret";
 
+    // Use blob from connection to get client key exchange message
     client_random.data = conn->secure.client_random;
     client_random.size = sizeof(conn->secure.client_random);
     server_random.data = conn->secure.server_random;
@@ -391,6 +392,7 @@ int s2n_hybrid_prf_master_secret(struct s2n_connection *conn, struct s2n_blob *p
     label.size = sizeof(master_secret_label) - 1;
 
     // TODO: get client key exchange message from connection and pass it in with client and server random
+    // Just for hybrid concatonate all 3 and pass in null for seed b
     return s2n_prf(conn, premaster_secret, &label, &client_random, &server_random, &master_secret);
 }
 

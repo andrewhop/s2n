@@ -36,6 +36,7 @@ static int s2n_recv_client_signature_algorithms(struct s2n_connection *conn, str
 static int s2n_recv_client_alpn(struct s2n_connection *conn, struct s2n_stuffer *extension);
 static int s2n_recv_client_status_request(struct s2n_connection *conn, struct s2n_stuffer *extension);
 static int s2n_recv_client_elliptic_curves(struct s2n_connection *conn, struct s2n_stuffer *extension);
+static int s2n_recv_client_kem_extension(struct s2n_connection *conn, struct s2n_stuffer *extension, int supported_parms[], int supported_length);
 static int s2n_recv_client_ec_point_formats(struct s2n_connection *conn, struct s2n_stuffer *extension);
 static int s2n_recv_client_renegotiation_info(struct s2n_connection *conn, struct s2n_stuffer *extension);
 static int s2n_recv_client_sct_list(struct s2n_connection *conn, struct s2n_stuffer *extension);
@@ -101,6 +102,17 @@ int s2n_client_extensions_send(struct s2n_connection *conn, struct s2n_stuffer *
     /* Write ECC extensions: Supported Curves and Supported Point Formats */
     int ec_curves_count = sizeof(s2n_ecc_supported_curves) / sizeof(s2n_ecc_supported_curves[0]);
     total_size += 12 + ec_curves_count * 2;
+
+    // Write BIKE  extension, each named bike is a 1 byte int
+    int bike_count = sizeof(s2n_supported_bike_kem) / sizeof(s2n_supported_bike_kem[0]);
+    // additional 2 bytes is for extension type
+    total_size += bike_count + 2;
+
+    // Write SIKE extension, each named sike is a 1 byte int
+    int sike_count = sizeof(s2n_supported_sike_kem) / sizeof(s2n_supported_sike_kem[0]);
+    // additional 2 bytes is for extension type
+    total_size += sike_count + 2;
+
 
     GUARD(s2n_stuffer_write_uint16(out, total_size));
 
@@ -186,6 +198,24 @@ int s2n_client_extensions_send(struct s2n_connection *conn, struct s2n_stuffer *
         GUARD(s2n_stuffer_write_uint8(out, 0));
     }
 
+    // Clients SHOULD send supported BIKE parameters
+    {
+        GUARD(s2n_stuffer_write_uint16(out, TLS_EXTENSION_BIKE));
+        GUARD(s2n_stuffer_write_uint8(out, bike_count));
+        for (int i = 0; i < bike_count; i++) {
+            GUARD(s2n_stuffer_write_uint8(out, s2n_supported_bike_kem[i]));
+        }
+    }
+
+    // Clients SHOULD send supported SIKE parameters
+    {
+        GUARD(s2n_stuffer_write_uint16(out, TLS_EXTENSION_SIKE));
+        GUARD(s2n_stuffer_write_uint8(out, sike_count));
+        for (int i = 0; i < sike_count; i++) {
+            GUARD(s2n_stuffer_write_uint8(out, s2n_supported_sike_kem[i]));
+        }
+    }
+
     return 0;
 }
 
@@ -229,6 +259,12 @@ int s2n_client_extensions_recv(struct s2n_connection *conn, struct s2n_array *pa
             break;
         case TLS_EXTENSION_SESSION_TICKET:
             GUARD(s2n_recv_client_session_ticket_ext(conn, &extension));
+            break;
+        case TLS_EXTENSION_BIKE:
+            GUARD(s2n_recv_client_kem_extension(conn, &extension, s2n_supported_bike_kem, 1));
+            break;
+        case TLS_EXTENSION_SIKE:
+            GUARD(s2n_recv_client_kem_extension(conn, &extension, s2n_supported_sike_kem, 1));
             break;
         }
     }
@@ -375,6 +411,28 @@ static int s2n_recv_client_elliptic_curves(struct s2n_connection *conn, struct s
     notnull_check(proposed_curves.data);
 
     if (s2n_ecc_find_supported_curve(&proposed_curves, &conn->secure.server_ecc_params.negotiated_curve) != 0) {
+        /* Can't agree on a curve, ECC is not allowed. Return success to proceed with the handshake. */
+        conn->secure.server_ecc_params.negotiated_curve = NULL;
+    }
+    return 0;
+}
+
+static int s2n_recv_client_kem_extension(struct s2n_connection *conn, struct s2n_stuffer *extension, int supported_parms[], int supported_length)
+{
+    uint8_t size_of_all;
+    struct s2n_blob proposed_kem_params = {0};
+
+    GUARD(s2n_stuffer_read_uint8(extension, &size_of_all));
+    if (size_of_all > s2n_stuffer_data_available(extension)) {
+        /* Malformed length, ignore the extension */
+        return 0;
+    }
+
+    proposed_kem_params.size = size_of_all;
+    proposed_kem_params.data = s2n_stuffer_raw_read(extension, proposed_kem_params.size);
+    notnull_check(proposed_kem_params.data);
+
+    if (s2n_kem_find_supported_named_kem(&proposed_kem_params, &) != 0) {
         /* Can't agree on a curve, ECC is not allowed. Return success to proceed with the handshake. */
         conn->secure.server_ecc_params.negotiated_curve = NULL;
     }

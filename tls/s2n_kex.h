@@ -34,7 +34,7 @@ struct s2n_kex {
     int (*server_key_send)(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *data_to_sign);
     int (*client_key_recv)(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
     int (*client_key_send)(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
-    int (*tls_prf)(struct s2n_connection *conn, struct s2n_blob *premaster_secret);
+    int (*prf)(struct s2n_connection *conn, struct s2n_blob *premaster_secret);
 };
 
 // return config location crypto params -> void* location

@@ -19,6 +19,8 @@
 #include "pq-crypto/bike/bike1_l1_kem.h"
 #include "pq-crypto/sike/sike_p503_kem.h"
 
+#include "stuffer/s2n_stuffer.h"
+
 #include "tls/s2n_kem.h"
 
 const struct s2n_kem bike1_level1 = {
@@ -42,6 +44,16 @@ const struct s2n_kem sikep503 = {
         .encrypt = &SIKE_P503_crypto_kem_enc,
         .decrypt = &SIKE_P503_crypto_kem_dec,
 };
+
+const enum NamedBIKEKEM s2n_supported_bike_kem[1] = {
+        BIKE1_Level1
+};
+
+const enum NamedSIKEKEM s2n_supported_sike_kem[1] = {
+        SIKEp503_KEM
+};
+
+
 
 int s2n_kem_generate_key_pair(const struct s2n_kem *kem, struct s2n_kem_params *params)
 {
@@ -71,5 +83,31 @@ int s2n_kem_decrypt_shared_secret(const struct s2n_kem *kem, struct s2n_kem_para
 
     GUARD(s2n_alloc(shared_secret, kem->sharedSecretKeySize));
     GUARD(kem->decrypt(shared_secret->data, ciphertext->data, params->private_key.data));
+    return 0;
+}
+
+// move to bike or sike
+int s2n_kem_find_supported_named_kem(struct s2n_blob *client_kem_names, int *supported_kems[], const int **matching_kem)
+{
+    struct s2n_stuffer kem_name_in = {{0}};
+
+    GUARD(s2n_stuffer_init(&kem_name_in, client_kem_names));
+    GUARD(s2n_stuffer_write(&kem_name_in, client_kem_names));
+    for (int i = 0; i < sizeof(*supported_kems) / sizeof(*supported_kems[0]); i++) {
+        int *candidate_server_kem_name = supported_kems[i];
+        for (int j = 0; j < client_kem_names->size; j++) {
+            uint16_t kem_name;
+            GUARD(s2n_stuffer_read_uint16(&kem_name_in, &kem_name));
+
+            if (*candidate_server_kem_name == kem_name) {
+                *matching_kem = candidate_server_kem_name;
+                return 0;
+            }
+        }
+        GUARD(s2n_stuffer_reread(&kem_name_in));
+    }
+
+    /* Nothing found */
+    S2N_ERROR(S2N_ERR_KEM_UNSUPPORTED_PARAMS);
     return 0;
 }

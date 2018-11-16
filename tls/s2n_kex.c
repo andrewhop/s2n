@@ -81,7 +81,7 @@ const struct s2n_kex s2n_rsa = {
         .client_key_recv = &s2n_rsa_client_key_recv,
         .client_key_send = &s2n_rsa_client_key_send,
         .additional_data.kem = NULL,
-        .tls_prf = &s2n_prf_master_secret,
+        .prf = &s2n_tls_prf_master_secret,
 };
 
 const struct s2n_kex s2n_dhe = {
@@ -94,7 +94,7 @@ const struct s2n_kex s2n_dhe = {
         .client_key_recv = &s2n_dhe_client_key_recv,
         .client_key_send = &s2n_dhe_client_key_send,
         .additional_data.kem = NULL,
-        .tls_prf = &s2n_prf_master_secret,
+        .prf = &s2n_tls_prf_master_secret,
 };
 
 const struct s2n_kex s2n_ecdhe = {
@@ -107,7 +107,7 @@ const struct s2n_kex s2n_ecdhe = {
         .client_key_recv = &s2n_ecdhe_client_key_recv,
         .client_key_send = &s2n_ecdhe_client_key_send,
         .additional_data.kem = NULL,
-        .tls_prf = &s2n_prf_master_secret,
+        .prf = &s2n_tls_prf_master_secret,
 };
 
 const struct s2n_kex s2n_bike = {
@@ -144,7 +144,7 @@ const struct s2n_kex s2n_hybrid_ecdhe_bike = {
         .client_key_recv = &s2n_hybrid_client_recv_params,
         .client_key_send = &s2n_hybrid_client_send_params,
         .additional_data.hybrid = {&s2n_ecdhe, &s2n_bike},
-        .tls_prf = &s2n_hybrid_prf_master_secret,
+        .prf = &s2n_hybrid_prf_master_secret,
 };
 
 const struct s2n_kex s2n_hybrid_ecdhe_sike = {
@@ -157,7 +157,7 @@ const struct s2n_kex s2n_hybrid_ecdhe_sike = {
         .client_key_recv = &s2n_hybrid_client_recv_params,
         .client_key_send = &s2n_hybrid_client_send_params,
         .additional_data.hybrid = {&s2n_ecdhe, &s2n_sike},
-        .tls_prf = &s2n_hybrid_prf_master_secret,
+        .prf = &s2n_hybrid_prf_master_secret,
 };
 
 int s2n_kex_server_extension_size(const struct s2n_kex *kex)
@@ -208,6 +208,6 @@ int s2n_kex_client_key_send(const struct s2n_kex *kex, struct s2n_connection *co
 
 int s2n_kex_tls_prf(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *premaster_secret)
 {
-    notnull_check(kex->tls_prf);
-    return kex->tls_prf(conn, premaster_secret);
+    notnull_check(kex->prf);
+    return kex->prf(conn, premaster_secret);
 }
