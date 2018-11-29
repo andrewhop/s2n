@@ -19,6 +19,9 @@
 #include "utils/s2n_blob.h"
 
 struct s2n_kem_params {
+    const struct s2n_kem *negotiated_bike_kem;
+    const struct s2n_kem *negotiated_sike_kem;
+    const struct s2n_kem *negotiated_kem;
     struct s2n_blob public_key;
     struct s2n_blob private_key;
 };

@@ -17,7 +17,10 @@
 
 #include <stdint.h>
 #include "tls/s2n_kem_params.h"
-
+enum s2n_kem_type {
+    BIKE,
+    SIKE
+};
 enum NamedBIKEKEM {
     BIKE1_Level1 = 1,
     BIKE1_Leve3 = 2,
@@ -30,7 +33,6 @@ enum NamedBIKEKEM {
     BIKE3_Level5 = 9
 };
 
-extern const enum NamedBIKEKEM s2n_supported_bike_kem[1];
 
 enum NamedSIKEKEM {
     SIKEp503_KEM = 1,
@@ -39,10 +41,10 @@ enum NamedSIKEKEM {
 
 };
 
-extern const enum NamedSIKEKEM s2n_supported_sike_kem[1];
 
 struct s2n_kem {
-    uint8_t named_kem;
+    const enum s2n_kem_type kem_type;
+    uint8_t kem_extension_id;
     const uint16_t publicKeySize;
     const uint16_t privateKeySize;
     const uint16_t sharedSecretKeySize;
@@ -53,9 +55,8 @@ struct s2n_kem {
     // server pick params function here
     // client send params
 };
-
-extern const struct s2n_kem bike1_level1;
-extern const struct s2n_kem sikep503;
+extern const struct s2n_kem s2n_supported_sike_kem[1];
+extern const struct s2n_kem s2n_supported_bike_kem[1];
 
 extern int s2n_kem_generate_key_pair(const struct s2n_kem *kem, struct s2n_kem_params *params);
 
@@ -65,4 +66,5 @@ extern int s2n_kem_generate_shared_secret(const struct s2n_kem *kem, struct s2n_
 extern int s2n_kem_decrypt_shared_secret(const struct s2n_kem *kem, struct s2n_kem_params *params,
                                          struct s2n_blob *shared_secret, struct s2n_blob *ciphertext);
 
-extern int s2n_kem_find_supported_named_kem(struct s2n_blob *kem_names, const int **matching_kem);
+extern int s2n_kem_find_supported_named_kem(struct s2n_blob *client_kem_names, const struct s2n_kem supported_kems[], const int num_supported_kems,
+                                     const struct s2n_kem **matching_kem);

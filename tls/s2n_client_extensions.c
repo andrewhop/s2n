@@ -36,7 +36,8 @@ static int s2n_recv_client_signature_algorithms(struct s2n_connection *conn, str
 static int s2n_recv_client_alpn(struct s2n_connection *conn, struct s2n_stuffer *extension);
 static int s2n_recv_client_status_request(struct s2n_connection *conn, struct s2n_stuffer *extension);
 static int s2n_recv_client_elliptic_curves(struct s2n_connection *conn, struct s2n_stuffer *extension);
-static int s2n_recv_client_kem_extension(struct s2n_connection *conn, struct s2n_stuffer *extension, int supported_parms[], int supported_length);
+static int s2n_recv_client_kem_extension(struct s2n_connection *conn, struct s2n_stuffer *extension,
+        const struct s2n_kem supported_parms[], const int num_supported_kems, const struct s2n_kem **choosen_kem);
 static int s2n_recv_client_ec_point_formats(struct s2n_connection *conn, struct s2n_stuffer *extension);
 static int s2n_recv_client_renegotiation_info(struct s2n_connection *conn, struct s2n_stuffer *extension);
 static int s2n_recv_client_sct_list(struct s2n_connection *conn, struct s2n_stuffer *extension);
@@ -105,13 +106,13 @@ int s2n_client_extensions_send(struct s2n_connection *conn, struct s2n_stuffer *
 
     // Write BIKE  extension, each named bike is a 1 byte int
     int bike_count = sizeof(s2n_supported_bike_kem) / sizeof(s2n_supported_bike_kem[0]);
-    // additional 2 bytes is for extension type
-    total_size += bike_count + 2;
+    // additional 2 bytes is for extension type, 2 for overall length, 1 for length of the list of parameters
+    total_size += bike_count + 5;
 
     // Write SIKE extension, each named sike is a 1 byte int
     int sike_count = sizeof(s2n_supported_sike_kem) / sizeof(s2n_supported_sike_kem[0]);
-    // additional 2 bytes is for extension type
-    total_size += sike_count + 2;
+    // additional 2 bytes is for extension type, 2 for overall length, 1 for length of the list of parameters
+    total_size += sike_count + 5;
 
 
     GUARD(s2n_stuffer_write_uint16(out, total_size));
@@ -200,19 +201,35 @@ int s2n_client_extensions_send(struct s2n_connection *conn, struct s2n_stuffer *
 
     // Clients SHOULD send supported BIKE parameters
     {
+        /* i.e. FE 01 03 02 01 04
+         * FE 01 is the BIKE extension
+         * 03 is the remaining lenght of the entire extension
+         * 02 is the length of the list of supported BIKE parameters
+         * 01 is BIKE1 Level 1
+         * 04 is BIKE 2 Level 1
+         */
         GUARD(s2n_stuffer_write_uint16(out, TLS_EXTENSION_BIKE));
+        GUARD(s2n_stuffer_write_uint16(out, 1 + bike_count));
         GUARD(s2n_stuffer_write_uint8(out, bike_count));
         for (int i = 0; i < bike_count; i++) {
-            GUARD(s2n_stuffer_write_uint8(out, s2n_supported_bike_kem[i]));
+            GUARD(s2n_stuffer_write_uint8(out, s2n_supported_bike_kem[i].kem_extension_id));
         }
     }
 
     // Clients SHOULD send supported SIKE parameters
     {
+        /* i.e. FE 02 03 02 01 02
+         * FE 02 is the SIKE extension
+         * 03 is the remaining lenght of the entire extension
+         * 02 is the length of the list of supported BIKE parameters
+         * 01 is SIKEp503
+         * 02 is SIKEp751
+         */
         GUARD(s2n_stuffer_write_uint16(out, TLS_EXTENSION_SIKE));
+        GUARD(s2n_stuffer_write_uint16(out, 1 + sike_count));
         GUARD(s2n_stuffer_write_uint8(out, sike_count));
         for (int i = 0; i < sike_count; i++) {
-            GUARD(s2n_stuffer_write_uint8(out, s2n_supported_sike_kem[i]));
+            GUARD(s2n_stuffer_write_uint8(out, s2n_supported_sike_kem[i].kem_extension_id));
         }
     }
 
@@ -261,10 +278,10 @@ int s2n_client_extensions_recv(struct s2n_connection *conn, struct s2n_array *pa
             GUARD(s2n_recv_client_session_ticket_ext(conn, &extension));
             break;
         case TLS_EXTENSION_BIKE:
-            GUARD(s2n_recv_client_kem_extension(conn, &extension, s2n_supported_bike_kem, 1));
+            GUARD(s2n_recv_client_kem_extension(conn, &extension, s2n_supported_bike_kem, 1, &conn->secure.kem_params.negotiated_bike_kem));
             break;
         case TLS_EXTENSION_SIKE:
-            GUARD(s2n_recv_client_kem_extension(conn, &extension, s2n_supported_sike_kem, 1));
+            GUARD(s2n_recv_client_kem_extension(conn, &extension, s2n_supported_sike_kem, 1, &conn->secure.kem_params.negotiated_sike_kem));
             break;
         }
     }
@@ -417,24 +434,25 @@ static int s2n_recv_client_elliptic_curves(struct s2n_connection *conn, struct s
     return 0;
 }
 
-static int s2n_recv_client_kem_extension(struct s2n_connection *conn, struct s2n_stuffer *extension, int supported_parms[], int supported_length)
+static int s2n_recv_client_kem_extension(struct s2n_connection *conn, struct s2n_stuffer *extension, const struct s2n_kem supported_kems[],
+        const int num_supported_kems, const struct s2n_kem **choosen_kem)
 {
-    uint8_t size_of_all;
+    uint8_t size_of_list;
     struct s2n_blob proposed_kem_params = {0};
 
-    GUARD(s2n_stuffer_read_uint8(extension, &size_of_all));
-    if (size_of_all > s2n_stuffer_data_available(extension)) {
+    GUARD(s2n_stuffer_read_uint8(extension, &size_of_list));
+    if (size_of_list > s2n_stuffer_data_available(extension)) {
         /* Malformed length, ignore the extension */
         return 0;
     }
 
-    proposed_kem_params.size = size_of_all;
+    proposed_kem_params.size = size_of_list;
     proposed_kem_params.data = s2n_stuffer_raw_read(extension, proposed_kem_params.size);
     notnull_check(proposed_kem_params.data);
 
-    if (s2n_kem_find_supported_named_kem(&proposed_kem_params, &) != 0) {
-        /* Can't agree on a curve, ECC is not allowed. Return success to proceed with the handshake. */
-        conn->secure.server_ecc_params.negotiated_curve = NULL;
+    if (s2n_kem_find_supported_named_kem(&proposed_kem_params, supported_kems, num_supported_kems, choosen_kem) != 0) {
+        /* Can't agree on a kem. Return success to proceed with the handshake. */
+        *choosen_kem = NULL;
     }
     return 0;
 }

@@ -377,23 +377,30 @@ int s2n_tls_prf_master_secret(struct s2n_connection *conn, struct s2n_blob *prem
 
 int s2n_hybrid_prf_master_secret(struct s2n_connection *conn, struct s2n_blob *premaster_secret)
 {
-    struct s2n_blob client_random, server_random, master_secret;
+    struct s2n_blob master_secret;
+
     struct s2n_blob label = {0};
     uint8_t master_secret_label[] = "hybrid master secret";
 
     // Use blob from connection to get client key exchange message
-    client_random.data = conn->secure.client_random;
-    client_random.size = sizeof(conn->secure.client_random);
-    server_random.data = conn->secure.server_random;
-    server_random.size = sizeof(conn->secure.server_random);
+    const int client_random_size = sizeof(conn->secure.client_random);
+    const int server_random_size = sizeof(conn->secure.server_random);
     master_secret.data = conn->secure.master_secret;
     master_secret.size = sizeof(conn->secure.master_secret);
     label.data = master_secret_label;
     label.size = sizeof(master_secret_label) - 1;
 
-    // TODO: get client key exchange message from connection and pass it in with client and server random
-    // Just for hybrid concatonate all 3 and pass in null for seed b
-    return s2n_prf(conn, premaster_secret, &label, &client_random, &server_random, &master_secret);
+    struct s2n_blob combined_seed = {0};
+    s2n_alloc(&combined_seed, client_random_size + server_random_size + conn->secure.client_key_exchange_message.size);
+    // TODO make this a stuffer and then pass the stuffer's blob to the prf
+    memcpy_check(combined_seed.data, conn->secure.client_random, client_random_size);
+    memcpy_check(combined_seed.data + client_random_size, conn->secure.server_random, server_random_size);
+    memcpy_check(combined_seed.data + client_random_size + server_random_size, conn->secure.client_key_exchange_message.data, conn->secure.client_key_exchange_message.size);
+
+    int result =  s2n_prf(conn, premaster_secret, &label, &combined_seed, NULL, &master_secret);
+    GUARD(s2n_free(&combined_seed));
+
+    return result;
 }
 
 static int s2n_sslv3_finished(struct s2n_connection *conn, uint8_t prefix[4], struct s2n_hash_state *md5, struct s2n_hash_state *sha1, uint8_t * out)

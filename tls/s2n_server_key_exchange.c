@@ -210,6 +210,7 @@ int s2n_rsa_server_send_key(const struct s2n_kex *kex, struct s2n_connection *co
 int s2n_kem_server_recv_key(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *data_to_verify)
 {
     struct s2n_stuffer *in = &conn->handshake.io;
+    const struct s2n_kem *kem = conn->secure.kem_params.negotiated_kem;
     uint16_t key_length;
 
     /* Keep a copy to the start of the whole structure for the signature check */
@@ -219,7 +220,7 @@ int s2n_kem_server_recv_key(const struct s2n_kex *kex, struct s2n_connection *co
     // the server sends the named KEM again and this must match what was agreed upon during server hello
     uint8_t named_kem;
     GUARD(s2n_stuffer_read_uint8(in, &named_kem));
-    eq_check(named_kem, kex->additional_data.kem->named_kem); //
+    eq_check(named_kem, kem->kem_extension_id); //
 
     GUARD(s2n_stuffer_read_uint16(in, &key_length));
     S2N_ERROR_IF(key_length > s2n_stuffer_data_available(in), S2N_ERR_BAD_MESSAGE);
@@ -228,7 +229,7 @@ int s2n_kem_server_recv_key(const struct s2n_kex *kex, struct s2n_connection *co
     conn->secure.kem_params.public_key.data = s2n_stuffer_raw_read(in, key_length);
     notnull_check(conn->secure.kem_params.public_key.data);
 
-    // 1 byte for the named_kem
+    // 1 byte for the kem_extension_id
     // 2 for the key_length
     // and however long the key actually was
     data_to_verify->size = 1 + 2 + key_length;
@@ -239,18 +240,19 @@ int s2n_kem_server_recv_key(const struct s2n_kex *kex, struct s2n_connection *co
 int s2n_kem_server_send_key(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *data_to_sign)
 {
     struct s2n_stuffer *out = &conn->handshake.io;
+    const struct s2n_kem *kem = conn->secure.kem_params.negotiated_kem;
 
     // TODO get paramter location
-    s2n_kem_generate_key_pair(kex->additional_data.kem, &conn->secure.kem_params);
+    s2n_kem_generate_key_pair(kem, &conn->secure.kem_params);
 
     data_to_sign->data = s2n_stuffer_raw_write(out, 0);
     notnull_check(data_to_sign->data);
 
-    GUARD(s2n_stuffer_write_uint8(out, (uint8_t) kex->additional_data.kem->named_kem));
+    GUARD(s2n_stuffer_write_uint8(out, (uint8_t) kem->kem_extension_id));
     GUARD(s2n_stuffer_write_uint16(out, conn->secure.kem_params.public_key.size));
     GUARD(s2n_stuffer_write(out, &conn->secure.kem_params.public_key));
 
-    // 1 byte for the named_kem
+    // 1 byte for the kem_extension_id
     // 2 for the public key length
     // and however long the key actually was
     data_to_sign->size = 1 + 2 +  conn->secure.kem_params.public_key.size;
@@ -265,14 +267,14 @@ int s2n_hybrid_server_recv_params(const struct s2n_kex *kex, struct s2n_connecti
     notnull_check(data_to_verify->data);
 
     // key_exchange_alg->hybrid is an array of 2 pointers to s2n_kex's
-    const struct s2n_kex *hybrid_kem_1 = *conn->secure.cipher_suite->key_exchange_alg->additional_data.hybrid;
-    const struct s2n_kex *hybrid_kem_2 = hybrid_kem_1 + 1;
+    const struct s2n_kex *hybrid_kex_1 = *conn->secure.cipher_suite->key_exchange_alg->hybrid;
+    const struct s2n_kex *hybrid_kex_2 = hybrid_kex_1 + 1;
 
     struct s2n_blob data_to_verify_1 = {0};
-    GUARD(s2n_kex_server_key_recv(hybrid_kem_1, conn, &data_to_verify_1));
+    GUARD(s2n_kex_server_key_recv(hybrid_kex_1, conn, &data_to_verify_1));
 
     struct s2n_blob data_to_verify_2 = {0};
-    GUARD(s2n_kex_server_key_recv(hybrid_kem_2, conn, &data_to_verify_2));
+    GUARD(s2n_kex_server_key_recv(hybrid_kex_2, conn, &data_to_verify_2));
 
     // hybrid data to verify is equal to the data_to_verify_1 || data_to_verify_2, this is the same order the data is
     // read in from the io stuffer
@@ -288,14 +290,14 @@ int s2n_hybrid_server_send_params(const struct s2n_kex *kex, struct s2n_connecti
     notnull_check(data_to_sign->data);
 
     // key_exchange_alg->hybrid is an array of 2 pointers to s2n_kex's
-    const struct s2n_kex *hybrid_kem_1 = *conn->secure.cipher_suite->key_exchange_alg->additional_data.hybrid;
-    const struct s2n_kex *hybrid_kem_2 = hybrid_kem_1 + 1;
+    const struct s2n_kex *hybrid_kex_1 = *conn->secure.cipher_suite->key_exchange_alg->hybrid;
+    const struct s2n_kex *hybrid_kex_2 = hybrid_kex_1 + 1;
 
     struct s2n_blob data_to_verify_1 = {0};
-    GUARD(s2n_kex_server_key_send(hybrid_kem_1, conn, &data_to_verify_1));
+    GUARD(s2n_kex_server_key_send(hybrid_kex_1, conn, &data_to_verify_1));
 
     struct s2n_blob data_to_verify_2 = {0};
-    GUARD(s2n_kex_server_key_send(hybrid_kem_2, conn, &data_to_verify_2));
+    GUARD(s2n_kex_server_key_send(hybrid_kex_2, conn, &data_to_verify_2));
 
     // hybrid data to sign is equal to the data_to_verify_1 || data_to_verify_2, this is the same order the data is
     // written to the io stuffer

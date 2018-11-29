@@ -190,6 +190,8 @@ static int s2n_parse_client_hello(struct s2n_connection *conn)
 
     /* This is going to be our default if the client has no preference. */
     conn->secure.server_ecc_params.negotiated_curve = &s2n_ecc_supported_curves[0];
+    conn->secure.kem_params.negotiated_bike_kem = &s2n_supported_bike_kem[0];
+    conn->secure.kem_params.negotiated_sike_kem = &s2n_supported_sike_kem[0];
 
     uint16_t extensions_length = 0;
     if (s2n_stuffer_data_available(in) >= 2) {

@@ -55,6 +55,9 @@
 
 #define TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256  0xCC, 0xA8
 #define TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256    0xCC, 0xAA
+/* From SIKE and BIKE Hybrid Key Exchange Cipher Suites for Transport Layer Security */
+#define TLS_ECDHE_BIKE_RSA_WITH_AES_256_GCM_SHA384 0xFF, 0x04
+#define TLS_ECDHE_SIKE_RSA_WITH_AES_256_GCM_SHA384 0xFF, 0x08
 
 /* From https://tools.ietf.org/html/rfc7507 */
 #define TLS_FALLBACK_SCSV                   0x56, 0x00
@@ -71,8 +74,9 @@
 #define TLS_EXTENSION_SCT_LIST             18
 #define TLS_EXTENSION_RENEGOTIATION_INFO   65281
 #define TLS_EXTENSION_SESSION_TICKET       35
-#define TLS_EXTENSION_BIKE                 65282
-#define TLS_EXTENSION_SIKE                 65283
+/* From SIKE and BIKE Hybrid Key Exchange Cipher Suites for Transport Layer Security */
+#define TLS_EXTENSION_BIKE                 0xFE01
+#define TLS_EXTENSION_SIKE                 0xFE02
 
 /* TLS Signature Algorithms - RFC 5246 7.4.1.4.1*/
 #define TLS_SIGNATURE_ALGORITHM_ANONYMOUS   0

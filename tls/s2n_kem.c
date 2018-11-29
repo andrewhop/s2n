@@ -23,36 +23,33 @@
 
 #include "tls/s2n_kem.h"
 
-const struct s2n_kem bike1_level1 = {
-        .named_kem = BIKE1_Level1,
-        .publicKeySize = BIKE1_L1_PUBLIC_KEY_BYTES,
-        .privateKeySize = BIKE1_L1_SECRET_KEY_BYTES,
-        .sharedSecretKeySize = BIKE1_L1_SECRET_KEY_BYTES,
-        .ciphertextSize = BIKE1_L1_CIPHERTEXT_BYTES,
-        .generate_keypair = &BIKE1_L1_crypto_kem_keypair,
-        .encrypt = &BIKE1_L1_crypto_kem_enc,
-        .decrypt = &BIKE1_L1_crypto_kem_dec,
+const struct s2n_kem s2n_supported_bike_kem[1] = {
+        {
+            .kem_type = BIKE,
+            .kem_extension_id = BIKE1_Level1,
+            .publicKeySize = BIKE1_L1_PUBLIC_KEY_BYTES,
+            .privateKeySize = BIKE1_L1_SECRET_KEY_BYTES,
+            .sharedSecretKeySize = BIKE1_L1_SECRET_KEY_BYTES,
+            .ciphertextSize = BIKE1_L1_CIPHERTEXT_BYTES,
+            .generate_keypair = &BIKE1_L1_crypto_kem_keypair,
+            .encrypt = &BIKE1_L1_crypto_kem_enc,
+            .decrypt = &BIKE1_L1_crypto_kem_dec,
+        }
 };
 
-const struct s2n_kem sikep503 = {
-        .named_kem = SIKEp503_KEM,
-        .publicKeySize = SIKE_P503_PUBLIC_KEY_BYTES,
-        .privateKeySize = SIKE_P503_SECRET_KEY_BYTES,
-        .sharedSecretKeySize = SIKE_P503_SHARED_SECRET_BYTES,
-        .ciphertextSize = SIKE_P503_CIPHERTEXT_BYTES,
-        .generate_keypair = &SIKE_P503_crypto_kem_keypair,
-        .encrypt = &SIKE_P503_crypto_kem_enc,
-        .decrypt = &SIKE_P503_crypto_kem_dec,
+const struct s2n_kem s2n_supported_sike_kem[1] = {
+        {
+            .kem_type = SIKE,
+            .kem_extension_id = SIKEp503_KEM,
+            .publicKeySize = SIKE_P503_PUBLIC_KEY_BYTES,
+            .privateKeySize = SIKE_P503_SECRET_KEY_BYTES,
+            .sharedSecretKeySize = SIKE_P503_SHARED_SECRET_BYTES,
+            .ciphertextSize = SIKE_P503_CIPHERTEXT_BYTES,
+            .generate_keypair = &SIKE_P503_crypto_kem_keypair,
+            .encrypt = &SIKE_P503_crypto_kem_enc,
+            .decrypt = &SIKE_P503_crypto_kem_dec,
+        }
 };
-
-const enum NamedBIKEKEM s2n_supported_bike_kem[1] = {
-        BIKE1_Level1
-};
-
-const enum NamedSIKEKEM s2n_supported_sike_kem[1] = {
-        SIKEp503_KEM
-};
-
 
 
 int s2n_kem_generate_key_pair(const struct s2n_kem *kem, struct s2n_kem_params *params)
@@ -86,21 +83,21 @@ int s2n_kem_decrypt_shared_secret(const struct s2n_kem *kem, struct s2n_kem_para
     return 0;
 }
 
-// move to bike or sike
-int s2n_kem_find_supported_named_kem(struct s2n_blob *client_kem_names, int *supported_kems[], const int **matching_kem)
+int s2n_kem_find_supported_named_kem(struct s2n_blob *client_kem_names, const struct s2n_kem supported_kems[], const int num_supported_kems,
+        const struct s2n_kem **matching_kem)
 {
     struct s2n_stuffer kem_name_in = {{0}};
 
     GUARD(s2n_stuffer_init(&kem_name_in, client_kem_names));
     GUARD(s2n_stuffer_write(&kem_name_in, client_kem_names));
-    for (int i = 0; i < sizeof(*supported_kems) / sizeof(*supported_kems[0]); i++) {
-        int *candidate_server_kem_name = supported_kems[i];
+    for (int i = 0; i < num_supported_kems; i++) {
+        const struct s2n_kem candidate_server_kem_name = supported_kems[i];
         for (int j = 0; j < client_kem_names->size; j++) {
-            uint16_t kem_name;
-            GUARD(s2n_stuffer_read_uint16(&kem_name_in, &kem_name));
+            uint8_t kem_name;
+            GUARD(s2n_stuffer_read_uint8(&kem_name_in, &kem_name));
 
-            if (*candidate_server_kem_name == kem_name) {
-                *matching_kem = candidate_server_kem_name;
+            if (candidate_server_kem_name.kem_type == kem_name) {
+                *matching_kem = &candidate_server_kem_name;
                 return 0;
             }
         }

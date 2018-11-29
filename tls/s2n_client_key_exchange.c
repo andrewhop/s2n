@@ -190,6 +190,7 @@ int s2n_client_key_send(struct s2n_connection *conn)
 int s2n_kem_client_recv_key(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     struct s2n_stuffer *in = &conn->handshake.io;
+    const struct s2n_kem *kem = conn->secure.kem_params.negotiated_kem;
     uint16_t ciphertext_length;
 
     GUARD(s2n_stuffer_read_uint16(in, &ciphertext_length));
@@ -197,7 +198,7 @@ int s2n_kem_client_recv_key(const struct s2n_kex *kex, struct s2n_connection *co
     struct s2n_blob ciphertext = {.size = ciphertext_length, .data = s2n_stuffer_raw_read(in, ciphertext_length)};
     notnull_check(ciphertext.data);
 
-    s2n_kem_decrypt_shared_secret(kex->additional_data.kem, &conn->secure.kem_params, shared_key, &ciphertext);
+    s2n_kem_decrypt_shared_secret(kem, &conn->secure.kem_params, shared_key, &ciphertext);
 
     GUARD(s2n_free(&conn->secure.kem_params.private_key));
 
@@ -207,9 +208,10 @@ int s2n_kem_client_recv_key(const struct s2n_kex *kex, struct s2n_connection *co
 int s2n_kem_client_send_key(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
     struct s2n_stuffer *out = &conn->handshake.io;
+    const struct s2n_kem *kem = conn->secure.kem_params.negotiated_kem;
 
     struct s2n_blob ciphertext = {0};
-    s2n_kem_generate_shared_secret(kex->additional_data.kem, &conn->secure.kem_params, shared_key, &ciphertext);
+    s2n_kem_generate_shared_secret(kem, &conn->secure.kem_params, shared_key, &ciphertext);
 
 
     GUARD(s2n_stuffer_write_uint16(out, ciphertext.size));
@@ -219,15 +221,24 @@ int s2n_kem_client_send_key(const struct s2n_kex *kex, struct s2n_connection *co
 
 int s2n_hybrid_client_recv_params(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
+    struct s2n_stuffer *io = &conn->handshake.io;
 
-    const struct s2n_kex *hybrid_kem_1 = *kex->additional_data.hybrid;
-    const struct s2n_kex *hybrid_kem_2 = hybrid_kem_1 + 1;
-
+    /* Keep a copy to the start of the entire hybrid client key exchange message for the hybrid PRF */
+    struct s2n_blob *client_key_exchange_message = &conn->secure.client_key_exchange_message;
+    client_key_exchange_message->data = s2n_stuffer_raw_read(io, 0);
+    notnull_check(client_key_exchange_message->data);
+    const int start = io->read_cursor;
+    
+    const struct s2n_kex *hybrid_kex_1 = *kex->hybrid;
+    const struct s2n_kex *hybrid_kex_2 = hybrid_kex_1 + 1;
+    
     struct s2n_blob shared_key_1 = {0}; // fix name
-    GUARD(s2n_kex_client_key_recv(hybrid_kem_1, conn, &shared_key_1));
+    GUARD(s2n_kex_client_key_recv(hybrid_kex_1, conn, &shared_key_1));
 
     struct s2n_blob shared_key_2 = {0};
-    GUARD(s2n_kex_client_key_recv(hybrid_kem_2, conn, &shared_key_2));
+    GUARD(s2n_kex_client_key_recv(hybrid_kex_2, conn, &shared_key_2));
+
+    client_key_exchange_message->size = io->read_cursor - start;
 
     // The shared key for the PRF is ecdhe_key || kem_key
     s2n_alloc(shared_key, shared_key_1.size + shared_key_2.size);
@@ -242,15 +253,27 @@ int s2n_hybrid_client_recv_params(const struct s2n_kex *kex, struct s2n_connecti
 
 int s2n_hybrid_client_send_params(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key)
 {
+    struct s2n_stuffer *io = &conn->handshake.io;
+
+    /* Keep a copy to the start of the entire hybrid client key exchange message for the hybrid PRF */
+    struct s2n_blob *client_key_exchange_message = &conn->secure.client_key_exchange_message;
+    client_key_exchange_message->data = s2n_stuffer_raw_read(io, 0);
+    notnull_check(client_key_exchange_message->data);
+    const int start = io->write_cursor;
+
     // key_exchange_alg->hybrid is an array of 2 pointers to s2n_kex's
-    const struct s2n_kex *hybrid_kem_1 = *conn->secure.cipher_suite->key_exchange_alg->additional_data.hybrid;
-    const struct s2n_kex *hybrid_kem_2 = hybrid_kem_1 + 1;
+    // TODO make a method for each iteration of kex
+    // stuffer, call 1 add to stuffer, free, repeate
+    const struct s2n_kex *hybrid_kex_1 = *conn->secure.cipher_suite->key_exchange_alg->hybrid;
+    const struct s2n_kex *hybrid_kex_2 = hybrid_kex_1 + 1;
 
     struct s2n_blob shared_key_1 = {0};
-    GUARD(s2n_kex_client_key_send(hybrid_kem_1, conn, &shared_key_1));
+    GUARD(s2n_kex_client_key_send(hybrid_kex_1, conn, &shared_key_1));
 
     struct s2n_blob shared_key_2 = {0};
-    GUARD(s2n_kex_client_key_send(hybrid_kem_2, conn, &shared_key_2));
+    GUARD(s2n_kex_client_key_send(hybrid_kex_2, conn, &shared_key_2));
+
+    client_key_exchange_message->size = io->write_cursor - start;
 
     // The shared key for the PRF is ecdhe_key || kem_key
     s2n_alloc(shared_key, shared_key_1.size + shared_key_2.size);

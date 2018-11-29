@@ -600,10 +600,10 @@ struct s2n_cipher_suite s2n_dhe_rsa_with_chacha20_poly1305_sha256 = /* 0xCC,0xAA
     .minimum_required_tls_version = S2N_TLS12,
 };
 
-struct s2n_cipher_suite s2n_hybrid_ecdhe_bike_rsa_with_aes_256_gcm_sha384 = {
+struct s2n_cipher_suite s2n_ecdhe_bike_rsa_with_aes_256_gcm_sha384 = {
         .available = 0,
-        .name = "ECDHE-RSA-AES256-GCM-SHA384",
-        .iana_value = { TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 },
+        .name = "ECDHE-BIKE-RSA-AES256-GCM-SHA384",
+        .iana_value = { TLS_ECDHE_BIKE_RSA_WITH_AES_256_GCM_SHA384 },
         .key_exchange_alg = &s2n_hybrid_ecdhe_bike,
         .auth_method = S2N_AUTHENTICATION_RSA,
         .record_alg = NULL,
@@ -614,10 +614,10 @@ struct s2n_cipher_suite s2n_hybrid_ecdhe_bike_rsa_with_aes_256_gcm_sha384 = {
         .minimum_required_tls_version = S2N_TLS12,
 };
 
-struct s2n_cipher_suite s2n_hybrid_ecdhe_sike_rsa_with_aes_256_gcm_sha384 = {
+struct s2n_cipher_suite s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384 = {
         .available = 0,
-        .name = "ECDHE-RSA-AES256-GCM-SHA384",
-        .iana_value = { TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 },
+        .name = "ECDHE-SIKE-RSA-AES256-GCM-SHA384",
+        .iana_value = { TLS_ECDHE_SIKE_RSA_WITH_AES_256_GCM_SHA384 },
         .key_exchange_alg = &s2n_hybrid_ecdhe_sike,
         .auth_method = S2N_AUTHENTICATION_RSA,
         .record_alg = NULL,
@@ -663,8 +663,8 @@ static struct s2n_cipher_suite *s2n_all_cipher_suites[] = {
     &s2n_ecdhe_rsa_with_aes_256_gcm_sha384,        /* 0xC0,0x30 */
     &s2n_ecdhe_rsa_with_chacha20_poly1305_sha256,  /* 0xCC,0xA8 */
     &s2n_dhe_rsa_with_chacha20_poly1305_sha256,    /* 0xCC,0xAA */
-    &s2n_hybrid_ecdhe_bike_rsa_with_aes_256_gcm_sha384,
-    &s2n_hybrid_ecdhe_sike_rsa_with_aes_256_gcm_sha384
+    &s2n_ecdhe_bike_rsa_with_aes_256_gcm_sha384,
+    &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384
 };
 
 /* All supported ciphers. Exposed for integration testing. */

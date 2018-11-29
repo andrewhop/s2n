@@ -67,7 +67,6 @@ const struct s2n_kex s2n_test_kem_kex = {
         .server_key_send = &s2n_kem_server_send_key,
         .client_key_recv = &s2n_kem_client_recv_key,
         .client_key_send = &s2n_kem_client_send_key,
-        .additional_data.kem = &s2n_test_kem,
 };
 
 int main(int argc, char **argv)

@@ -63,6 +63,7 @@ struct s2n_crypto_parameters {
     struct s2n_dh_params server_dh_params;
     struct s2n_ecc_params server_ecc_params;
     struct s2n_kem_params kem_params;
+    struct s2n_blob client_key_exchange_message;
     struct s2n_cert_chain_and_key *server_cert_chain;
     s2n_hash_algorithm conn_hash_alg;
     s2n_signature_algorithm conn_sig_alg;

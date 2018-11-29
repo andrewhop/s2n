@@ -56,17 +56,17 @@ static int check_ecc(const struct s2n_connection *conn)
 
 static int check_bike(const struct s2n_connection *conn)
 {
-    return 1; // TODO: put something here
+    return conn->secure.kem_params.negotiated_bike_kem != NULL;
 }
 
 static int check_sike(const struct s2n_connection *conn)
 {
-    return 1; // TODO: put something here
+    return conn->secure.kem_params.negotiated_sike_kem != NULL;
 }
 
 static int check_hybrid(const struct s2n_connection *conn)
 {
-    const struct s2n_kex *hybrid_kem_1 = *conn->secure.cipher_suite->key_exchange_alg->additional_data.hybrid;
+    const struct s2n_kex *hybrid_kem_1 = *conn->secure.cipher_suite->key_exchange_alg->hybrid;
     const struct s2n_kex *hybrid_kem_2 = hybrid_kem_1 + 1;
     return hybrid_kem_1->connection_supported(conn) && hybrid_kem_2->connection_supported(conn);
 }
@@ -80,7 +80,6 @@ const struct s2n_kex s2n_rsa = {
         .server_key_send = &s2n_rsa_server_send_key,
         .client_key_recv = &s2n_rsa_client_key_recv,
         .client_key_send = &s2n_rsa_client_key_send,
-        .additional_data.kem = NULL,
         .prf = &s2n_tls_prf_master_secret,
 };
 
@@ -93,7 +92,6 @@ const struct s2n_kex s2n_dhe = {
         .server_key_send = &s2n_dhe_server_send_params,
         .client_key_recv = &s2n_dhe_client_key_recv,
         .client_key_send = &s2n_dhe_client_key_send,
-        .additional_data.kem = NULL,
         .prf = &s2n_tls_prf_master_secret,
 };
 
@@ -106,7 +104,6 @@ const struct s2n_kex s2n_ecdhe = {
         .server_key_send = &s2n_ecdhe_server_send_params,
         .client_key_recv = &s2n_ecdhe_client_key_recv,
         .client_key_send = &s2n_ecdhe_client_key_send,
-        .additional_data.kem = NULL,
         .prf = &s2n_tls_prf_master_secret,
 };
 
@@ -119,7 +116,6 @@ const struct s2n_kex s2n_bike = {
         .server_key_send = &s2n_kem_server_send_key,
         .client_key_recv = &s2n_kem_client_recv_key,
         .client_key_send = &s2n_kem_client_send_key,
-        .additional_data.kem = &bike1_level1,
 };
 
 const struct s2n_kex s2n_sike = {
@@ -131,7 +127,6 @@ const struct s2n_kex s2n_sike = {
         .server_key_send = &s2n_kem_server_send_key,
         .client_key_recv = &s2n_kem_client_recv_key,
         .client_key_send = &s2n_kem_client_send_key,
-        .additional_data.kem = &sikep503,
 };
 
 const struct s2n_kex s2n_hybrid_ecdhe_bike = {
@@ -143,7 +138,7 @@ const struct s2n_kex s2n_hybrid_ecdhe_bike = {
         .server_key_send = &s2n_hybrid_server_send_params,
         .client_key_recv = &s2n_hybrid_client_recv_params,
         .client_key_send = &s2n_hybrid_client_send_params,
-        .additional_data.hybrid = {&s2n_ecdhe, &s2n_bike},
+        .hybrid = {&s2n_ecdhe, &s2n_bike},
         .prf = &s2n_hybrid_prf_master_secret,
 };
 
@@ -156,7 +151,7 @@ const struct s2n_kex s2n_hybrid_ecdhe_sike = {
         .server_key_send = &s2n_hybrid_server_send_params,
         .client_key_recv = &s2n_hybrid_client_recv_params,
         .client_key_send = &s2n_hybrid_client_send_params,
-        .additional_data.hybrid = {&s2n_ecdhe, &s2n_sike},
+        .hybrid = {&s2n_ecdhe, &s2n_sike},
         .prf = &s2n_hybrid_prf_master_secret,
 };
 
