@@ -390,15 +390,15 @@ int s2n_hybrid_prf_master_secret(struct s2n_connection *conn, struct s2n_blob *p
     label.data = master_secret_label;
     label.size = sizeof(master_secret_label) - 1;
 
-    struct s2n_blob combined_seed = {0};
-    s2n_alloc(&combined_seed, client_random_size + server_random_size + conn->secure.client_key_exchange_message.size);
-    // TODO make this a stuffer and then pass the stuffer's blob to the prf
-    memcpy_check(combined_seed.data, conn->secure.client_random, client_random_size);
-    memcpy_check(combined_seed.data + client_random_size, conn->secure.server_random, server_random_size);
-    memcpy_check(combined_seed.data + client_random_size + server_random_size, conn->secure.client_key_exchange_message.data, conn->secure.client_key_exchange_message.size);
+    struct s2n_stuffer combined_seed = {{0}};
 
-    int result =  s2n_prf(conn, premaster_secret, &label, &combined_seed, NULL, &master_secret);
-    GUARD(s2n_free(&combined_seed));
+    s2n_stuffer_alloc(&combined_seed, client_random_size + server_random_size + conn->secure.client_key_exchange_message.size);
+    s2n_stuffer_write_bytes(&combined_seed, conn->secure.client_random, client_random_size);
+    s2n_stuffer_write_bytes(&combined_seed, conn->secure.server_random, server_random_size);
+    s2n_stuffer_write(&combined_seed, &conn->secure.client_key_exchange_message);
+
+    int result =  s2n_prf(conn, premaster_secret, &label, &combined_seed.blob, NULL, &master_secret);
+    GUARD(s2n_stuffer_free(&combined_seed));
 
     return result;
 }
