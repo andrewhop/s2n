@@ -139,6 +139,10 @@ int main(int argc, char **argv)
         EXPECT_SUCCESS(s2n_hybrid_prf_master_secret(conn, &pms));
 
         EXPECT_BYTEARRAY_EQUAL(expected_master_secret, conn->secure.master_secret, S2N_TLS_SECRET_LEN);
+        EXPECT_SUCCESS(s2n_free(&pms));
+        EXPECT_SUCCESS(s2n_free(&conn->secure.client_key_exchange_message));
+        EXPECT_SUCCESS(s2n_connection_free(conn));
+
     }
 
     END_TEST();

@@ -100,5 +100,12 @@ int main(int argc, char **argv)
     EXPECT_EQUAL(TEST_SHARED_SECRET_LENGTH, server_shared_secret.size);
     EXPECT_BYTEARRAY_EQUAL(TEST_SHARED_SECRET, server_shared_secret.data, TEST_SHARED_SECRET_LENGTH);
 
+    EXPECT_SUCCESS(s2n_free(&client_shared_secret));
+    EXPECT_SUCCESS(s2n_free(&server_shared_secret));
+    EXPECT_SUCCESS(s2n_free(&ciphertext));
+    EXPECT_SUCCESS(s2n_free(&client_params.public_key));
+    EXPECT_SUCCESS(s2n_free(&server_params.public_key));
+    EXPECT_SUCCESS(s2n_free(&server_params.private_key));
+
     END_TEST();
 }
