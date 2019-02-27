@@ -1,7 +1,7 @@
 import "DRBG.cry";
 
 let blocksize = 16; // blocklen / 8
-let keysize = 16; // keylen / 8
+let keysize = 99; // keylen / 8
 let seedsize = 32;
 
 let {{

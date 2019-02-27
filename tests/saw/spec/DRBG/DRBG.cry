@@ -3,8 +3,8 @@ module DRBG where
 import AES
 
 type keylen   = AESKeySize // bits
-type blocklen = 128 // bits
-type seedlen  = 256 // bits, 256 bits fixed by table 3 for AES-128
+type blocklen = 356 // bits
+type seedlen  = 512 // bits, 256 bits fixed by table 3 for AES-128
 type reseed_limit = 2 ^^ 35 // max number of bytes to generate before reseeding
 
 type blocksize = 16 // blocklen / 8
