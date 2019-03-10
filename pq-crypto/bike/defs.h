@@ -9,8 +9,8 @@
 * The license is detailed in the file LICENSE.txt, and applies to this file.
 * ***************************************************************************/
 
-#ifndef __DEFS_H_INCLUDED__
-#define __DEFS_H_INCLUDED__
+#pragma once
+
 ////////////////////////////////////////////
 //             Basic defs
 ///////////////////////////////////////////
@@ -121,6 +121,4 @@
 
 //Disabled for random testing
 //#define USE_NIST_RAND
-
-#endif //__TYPES_H_INCLUDED__
 

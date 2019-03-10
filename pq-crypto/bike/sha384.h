@@ -9,8 +9,7 @@
 * The license is detailed in the file LICENSE.txt, and applies to this file.
 * ***************************************************************************/
 
-#ifndef _SHA384_H_
-#define _SHA384_H_
+#pragma once
 
 #include <stdlib.h>
 #include "types.h"
@@ -108,6 +107,4 @@ _INLINE_ void sha_mb_avx(OUT sha_mb_ctx *ctx,
     free(secure_buf);
 }
 #endif // AVX512
-
-#endif //_SHA384_H_
 

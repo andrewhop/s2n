@@ -9,8 +9,7 @@
 * The license is detailed in the file LICENSE.txt, and applies to this file.
 * ***************************************************************************/
 
-#ifndef __TYPES_H_INCLUDED__
-#define __TYPES_H_INCLUDED__
+#pragma once
 
 #include "bike_defs.h"
 #include <stdint.h>
@@ -245,6 +244,4 @@ typedef enum _status status_t;
 #pragma pack(pop)
 
 EXTERNC_END
-
-#endif //__TYPES_H_INCLUDED__
 

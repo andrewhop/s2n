@@ -9,8 +9,7 @@
 * The license is detailed in the file LICENSE.txt, and applies to this file.
 * ***************************************************************************/
 
-#ifndef _UTILITIES_H_
-#define _UTILITIES_H_
+#pragma once
 
 #include <string.h>
 #include "types.h"
@@ -141,5 +140,3 @@ _INLINE_ void secure_clean(OUT uint8_t *p, IN const uint32_t len)
         memset_func(p, 0, len);
 #endif
 }
-
-#endif //_UTILITIES_H_

@@ -9,8 +9,7 @@
 * The license is detailed in the file LICENSE.txt, and applies to this file.
 * ***************************************************************************/
 
-#ifndef __AES_H_INCLUDED__
-#define __AES_H_INCLUDED__
+#pragma once
 
 #include "types.h"
 
@@ -83,6 +82,4 @@ _INLINE_ void aes256_free_ks(OUT BIKE_UNUSED_ATT aes256_ks_t *ks)
 }
 
 #endif //USE_OPENSSL
-
-#endif //__AES_H_INCLUDED__
 

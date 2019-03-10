@@ -9,8 +9,7 @@
 * The license is detailed in the file LICENSE.txt, and applies to this file.
 * ***************************************************************************/
 
-#ifndef _GF2MUL_H_
-#define _GF2MUL_H_
+#pragma once
 
 #include "types.h"
 
@@ -62,5 +61,3 @@ status_t gf2x_mod_mul(OUT uint64_t *res,
                       IN const uint64_t *a, 
                       IN const uint64_t *b);
 #endif
-
-#endif //_GF2MUL_H_
