@@ -15,6 +15,16 @@
 //             Basic defs
 ///////////////////////////////////////////
 
+#ifdef __cplusplus
+  #define EXTERNC extern "C"
+  #define EXTERNC_START EXTERNC {
+  #define EXTERNC_END }
+#else
+  #define EXTERNC
+  #define EXTERNC_START
+  #define EXTERNC_END
+#endif
+
 // For code clarity.
 #define IN
 #define OUT
@@ -29,7 +39,7 @@
 // in asm files we must ensure with static_assert its validity
 #ifdef __ASM_FILE__
 #define bike_static_assert(COND, MSG)
-#elif defined(__cplusplus) || defined(static_assert)
+#elif (__cplusplus >= 201103L) || defined(static_assert)
 #define bike_static_assert(COND, MSG) static_assert(COND, "MSG")
 #else
 #define bike_static_assert(COND, MSG) typedef char static_assertion_##MSG[(COND) ? 1 : -1] BIKE_UNUSED_ATT
@@ -113,3 +123,4 @@
 //#define USE_NIST_RAND
 
 #endif //__TYPES_H_INCLUDED__
+

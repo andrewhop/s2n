@@ -67,10 +67,10 @@ status_t generate_sparse_rep(OUT uint64_t *a,
                              IN OUT aes_ctr_prf_state_t *prf_state);
 
 #ifdef CONSTANT_TIME
-void secure_set_bits(IN OUT uint64_t *a,
-                     IN const idx_t wlist[],
-                     IN const uint32_t a_len,
-                     IN const uint32_t weight);
+EXTERNC void secure_set_bits(IN OUT uint64_t *a,
+                             IN const idx_t wlist[],
+                             IN const uint32_t a_len_bytes,
+                             IN const uint32_t weight);
 #endif
 
 #endif // _SAMPLE_H_

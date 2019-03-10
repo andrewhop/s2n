@@ -128,7 +128,7 @@ _INLINE_ uint32_t secure_l32_mask(IN const uint32_t v1, IN const uint32_t v2)
 }
 
 // len is bytes length of in
-uint64_t count_ones(IN const uint8_t *in, IN const uint32_t len);
+EXTERNC uint64_t count_ones(IN const uint8_t *in, IN const uint32_t len);
 
 // len is bytes length of in
 _INLINE_ void secure_clean(OUT uint8_t *p, IN const uint32_t len)

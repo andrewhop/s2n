@@ -65,7 +65,7 @@ _INLINE_ status_t perform_aes(OUT uint8_t *ct, IN OUT aes_ctr_prf_state_t *s) {
 }
 
 status_t aes_ctr_prf(OUT uint8_t *a,
-                     IN aes_ctr_prf_state_t *s,
+                     IN OUT aes_ctr_prf_state_t *s,
                      IN const uint32_t len)
 {
     status_t res = SUCCESS;

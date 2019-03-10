@@ -15,6 +15,8 @@
 #include "bike_defs.h"
 #include <stdint.h>
 
+EXTERNC_START
+
 // C99 standard does not support unnamed union and structures.
 // This makes the code ugly because we get ugly lines such as
 // param.foo1.foo2.foo3.val = param.foo1.foo5.foo6.val
@@ -26,8 +28,6 @@
 #define PTR(x) x->u.v
 #define PTRV(x) (x->u.v.val)
 #define VAL(x) (x.u.v.val)
-
-#ifndef __cplusplus
 
 typedef struct uint128_s {
     union {
@@ -181,7 +181,7 @@ typedef ALIGN(16) struct syndrome_s {
         struct {
             red_r_t dup1;
             red_r_t dup2;
-#ifdef USE_AVX512F_INSTRUCTIONS
+#ifdef AVX512
             uint8_t reserved[N_QDQWORDS_BITS - N_BITS];
         } v;
         uint8_t raw[N_QDQWORDS_BITS];
@@ -244,6 +244,7 @@ typedef enum _status status_t;
 
 #pragma pack(pop)
 
-#endif //__cplusplus
+EXTERNC_END
+
 #endif //__TYPES_H_INCLUDED__
 
