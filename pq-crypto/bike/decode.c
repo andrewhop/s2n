@@ -378,13 +378,14 @@ _INLINE_ void fix_gray_error(IN OUT syndrome_t *s,
 #endif
 
 int decode(OUT e_t *e,
-           IN OUT syndrome_t *s,
+           IN const syndrome_t *original_s,
            IN const ct_t *ct,
            IN const sk_t *sk,
            IN const uint32_t u)
 {
     int code_ret = -1;
-    syndrome_t original_s;
+    syndrome_t _s;
+	syndrome_t *s = &_s;
 
 #ifdef CONSTANT_TIME
     decode_ctx_t ctx = {0};
@@ -412,7 +413,7 @@ int decode(OUT e_t *e,
 #endif
     }
 
-    original_s.u.v.dup1 = PTR(s).dup1;
+    PTR(s).dup1 = PTR(original_s).dup1;
 
     for(ctx.delta = MAX_DELTA; 
        (ctx.delta >= 0) && (count_ones(PTR(s).dup1.raw, sizeof(PTR(s).dup1)) > u); 
@@ -422,8 +423,8 @@ int decode(OUT e_t *e,
         memset(e, 0, sizeof(*e));
         
         // Reset the syndrom
-        PTR(s).dup1 = original_s.u.v.dup1;
-        PTR(s).dup2 = original_s.u.v.dup1;
+        PTR(s).dup1 = PTR(original_s).dup1;
+        PTR(s).dup2 = PTR(original_s).dup1;
 
         for (uint32_t iter = 0; iter < MAX_IT; iter++)
         {

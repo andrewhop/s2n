@@ -17,12 +17,8 @@
 
 #ifdef __cplusplus
   #define EXTERNC extern "C"
-  #define EXTERNC_START EXTERNC {
-  #define EXTERNC_END }
 #else
   #define EXTERNC
-  #define EXTERNC_START
-  #define EXTERNC_END
 #endif
 
 // For code clarity.

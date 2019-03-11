@@ -19,9 +19,9 @@ void compute_syndrome(OUT syndrome_t* syndrome,
                       IN const ct_t* ct,
                       IN const sk_t* sk);
 
-//e and s should be zeroed before calling the decoder.
+//e should be zeroed before calling the decoder.
 int decode(OUT e_t* e,
-           IN OUT syndrome_t* s,
+           IN const syndrome_t* s,
            IN const ct_t* ct,
            IN const sk_t* sk,
            IN const uint32_t u);

@@ -165,6 +165,9 @@ EXIT:
 }
 
 // Assumption 1) paddded_len % 64 = 0!
+// Assumption 2) a is a len bits array. It is padded to be a padded_len
+//               bytes array. The padded area may be modified and should 
+//               be ignored outside the function scope.
 status_t generate_sparse_rep(OUT uint64_t *a,
                              OUT idx_t wlist[],
                              IN  const uint32_t weight,
@@ -173,6 +176,8 @@ status_t generate_sparse_rep(OUT uint64_t *a,
                              IN OUT aes_ctr_prf_state_t *prf_state)
 {
     assert(padded_len % 64 == 0);
+    // Bits comparison
+    assert((padded_len*8) >= len);
 
     status_t res = SUCCESS;
     uint64_t ctr = 0;

@@ -14,8 +14,6 @@
 #include "bike_defs.h"
 #include <stdint.h>
 
-EXTERNC_START
-
 // C99 standard does not support unnamed union and structures.
 // This makes the code ugly because we get ugly lines such as
 // param.foo1.foo2.foo3.val = param.foo1.foo5.foo6.val
@@ -242,6 +240,4 @@ enum _status
 typedef enum _status status_t;
 
 #pragma pack(pop)
-
-EXTERNC_END
 
