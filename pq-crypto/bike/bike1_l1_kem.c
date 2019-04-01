@@ -310,7 +310,7 @@ int BIKE1_L1_crypto_kem_keypair(OUT unsigned char *pk, OUT unsigned char *sk)
     aes_ctr_prf_state_t h_prf_state = {0};
     
     // Get the entrophy seeds
-    get_seeds(&seeds, KEYGEN_SEEDS);
+    GUARD(get_seeds(&seeds, KEYGEN_SEEDS), res, EXIT);
 
     DMSG("  Enter crypto_kem_keypair.\n");
     DMSG("    Calculating the secret key.\n");
@@ -393,7 +393,7 @@ int BIKE1_L1_crypto_kem_enc(OUT unsigned char *ct,
     aes_ctr_prf_state_t e_prf_state = {0};
 
     // Get the entrophy seeds
-    get_seeds(&seeds, ENCAPS_SEEDS);
+    GUARD(get_seeds(&seeds, ENCAPS_SEEDS), res, EXIT);
 
     // Random data generator
     // Using first seed

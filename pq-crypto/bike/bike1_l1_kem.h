@@ -13,6 +13,8 @@
  * permissions and limitations under the License.
  */
 
+#pragma once
+
 #include "../pq-utils.h"
 
 ////////////////////////////////////////////////////////////////
