@@ -12,8 +12,8 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-#ifndef __BIKE1_L1_KEM_H_INCLUDED__
-#define __BIKE1_L1_KEM_H_INCLUDED__
+
+#pragma once
 
 #include "../pq-utils.h"
 
@@ -41,5 +41,3 @@ int BIKE1_L1_crypto_kem_dec(OUT unsigned char *ss, IN const unsigned char *ct, I
 #define BIKE1_L1_PUBLIC_KEY_BYTES  2542
 #define BIKE1_L1_CIPHERTEXT_BYTES 2542
 #define BIKE1_L1_SHARED_SECRET_BYTES 32
-
-#endif //__BIKE1_L1_KEM_H_INCLUDED__
