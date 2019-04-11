@@ -1,0 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////
+// Specifications
+
+let get_seeds_spec = do {
+    ap <- out_ref double_seed_T;
+    (b, bp) <- in_val seeds_purpose_T "seeds_type";
+    crucible_execute_func[ap, bp];
+    a' <- point_to double_seed_T ap "seeds";
+    return ();
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Proof commands
+get_seeds_ov <-  verify "get_seeds" [get_random_bytes_ov] get_seeds_spec;

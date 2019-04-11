@@ -1,0 +1,41 @@
+///////////////////////////////////////////////////////////////////////////////
+// Specifications
+
+let ossl_add3_spec len = do {
+    let ty = make_i8_T len;
+    ap <- out_ref ty;
+    (b,bp) <- in_ref ty "a_bin";
+    (c,cp) <- in_ref ty "b_bin";
+    crucible_execute_func [ap, bp, cp];
+    a' <- point_to ty ap "a'";
+    crucible_return (crucible_term {{ 0:[32] }});
+};
+
+let ossl_add3_left_spec ty = do {
+    (a, ap) <- inout_ref ty "a";
+    (b, bp) <- in_ref ty "b";
+    crucible_execute_func [ap, ap, bp];
+    a' <- point_to ty ap "a'";
+    crucible_return (crucible_term {{ 0:[32] }});
+};
+
+let cyclic_product_spec = do {
+    rbp <- out_ref rsize_T;
+    (a, abp) <- in_ref rsize_T "a";
+    (b, bbp) <- in_ref rsize_T "b";
+    crucible_execute_func [ rbp, abp, bbp];
+    r' <- point_to rsize_T rbp "cyclic_product_r'"; // writes to the result
+    res <- crucible_fresh_var "res" i32;
+    crucible_return (tm res);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Proof commands
+
+ossl_add3_ov1 <- admit "ossl_add" [] (ossl_add3_spec R_SIZE);
+
+ossl_add3_left_ov1 <- admit  "ossl_add" [] (ossl_add3_left_spec
+    ( make_i8_T R_SIZE));
+
+cyclic_product_ov <- admit "cyclic_product" [] (cyclic_product_spec);
+

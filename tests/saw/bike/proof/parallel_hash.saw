@@ -1,0 +1,17 @@
+///////////////////////////////////////////////////////////////////////////////
+// Specifications
+
+let compute_slice_len_spec = do {
+    la <- crucible_fresh_var "la" i64;
+    crucible_precond {{ la == 8188 }};
+    crucible_execute_func [tm la];
+    let alpha = eval_int {{
+        (((`8188 / `(MAX_MB_SLICES)) -
+        `(SLICE_REM)) / `(HASH_BLOCK_SIZE)):[64] }};
+    crucible_return (tm {{ ((`alpha * `HASH_BLOCK_SIZE) + `SLICE_REM):[64] }});
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Proof commands
+
+compute_slice_len_ov <- verify "compute_slice_len" [] (compute_slice_len_spec);

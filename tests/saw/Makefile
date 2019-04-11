@@ -23,12 +23,12 @@ SCRIPTS = $(wildcard *.saw)
 #A log file will be created for each test in the temp dir
 LOGS=$(patsubst %.saw,tmp/%.log,$(SCRIPTS))
 SHELL:=/bin/bash
-Z3_VERSION=$(shell z3 --version)
+YICES_VERSION=$(shell yices-smt2 --version)
 export LIBCRYPTO_ROOT:=$(shell pwd)/../../libcrypto-root
 
 .PHONY : all
 all:
-	@echo "Running formal verification with ${Z3_VERSION}"
+	@echo "Running formal verification with ${YICES_VERSION}"
 	@${MAKE} clean-logs
 	@${MAKE} $(LOGS)
 	@${MAKE} failure-tests
@@ -49,6 +49,10 @@ clean-bitcode :
 clean-failure-logs :
 	$(RM) -- $(wildcard failure_tests/*.log)
 
+.PHONY : clean-bike-logs
+clean-bike-logs :
+	$(RM) -- $(wildcard bike/*.log)
+
 .PHONY: clean
 clean: decruft
 
@@ -62,6 +66,7 @@ clean_the_dir :
 	${RM} -r s2n
 	${RM} -r tmp
 	${RM} -r failure_tests/*.log
+	${RM} -r bike/*.log
 	${RM} -r bitcode/*.bc
 
 ###########################################
@@ -72,11 +77,22 @@ clean_the_dir :
 # The pipefail command causes the entire command to fail if saw fails, even though we pipe it to tee
 # without it we would see only the tee return code
 tmp/%.log : %.saw bitcode/all_llvm.bc tmp
-	@echo "Running formal verification with ${Z3_VERSION}"
+	@echo "Running formal verification with ${YICES_VERSION}"
 	@echo saw $<
 	@set -o pipefail; \
 	saw $< | tee $@
 
+###########################################
+## BIKE Tests
+###########################################
+
+.PHONY : bike
+bike : bitcode
+	@${MAKE} clean-bike-logs
+	@${MAKE} bike/bike.log
+
+bike/bike.log :
+	saw bike/verify_bike.saw | tee $@
 
 ###########################################
 ## Failure Tests
@@ -145,6 +161,14 @@ bitcode :
 CRYPTO_C = $(wildcard ../../crypto/*.c) $(wildcard ../../crypto/*.h) ../../crypto/Makefile
 CRYPTO_COPY = $(addprefix s2n/crypto/, $(notdir $(CRYPTO_C)))
 
+PQ_CRYPTO_C = $(wildcard ../../pq-crypto/*.c) $(wildcard ../../pq-crypto/*.h) ../../pq-crypto/Makefile
+
+PQ_CRYPTO_COPY = $(addprefix s2n/pq-crypto/, $(notdir $(PQ_CRYPTO_C)))
+
+BIKE_C = $(wildcard ../../pq-crypto/bike/*.c) $(wildcard ../../pq-crypto/bike/*.h) ../../pq-crypto/bike/Makefile
+
+BIKE_COPY = $(addprefix s2n/pq-crypto/bike/, $(notdir $(BIKE_C)))
+
 UTILS_C = $(wildcard ../../utils/*.c) $(wildcard ../../utils/*.h) ../../utils/Makefile
 UTILS_COPY =$(addprefix s2n/utils/, $(notdir $(UTILS_C)))
 
@@ -166,6 +190,12 @@ s2n/api :
 s2n/crypto :
 	mkdir -p $@
 
+s2n/pq-crypto :
+	mkdir -p $@
+
+s2n/pq-crypto/bike :
+	mkdir -p $@
+
 s2n/utils :
 	mkdir -p $@
 
@@ -180,7 +210,8 @@ export BITCODE_DIR := $(CURDIR)/bitcode/
 tmp:
 	mkdir -p tmp
 
-bitcode/all_llvm.bc : s2n/crypto s2n/utils s2n/tls s2n/api s2n/error s2n/stuffer s2n/Makefile s2n/s2n.mk $(CRYPTO_COPY) $(UTILS_COPY) $(TLS_COPY) $(API_COPY) $(ERROR_COPY) $(STUFFER_COPY)
+bitcode/all_llvm.bc : s2n/crypto s2n/pq-crypto s2n/pq-crypto/bike s2n/utils s2n/tls s2n/api s2n/error s2n/stuffer s2n/Makefile s2n/s2n.mk $(CRYPTO_COPY) $(PQ_CRYPTO_COPY) $(BIKE_COPY) $(UTILS_COPY) $(TLS_COPY) $(API_COPY) $(ERROR_COPY) $(STUFFER_COPY)
+	patch s2n/pq-crypto/bike/bike_defs.h bike/patch/bike_defs.h.patch
 	${MAKE} -C s2n bc
 	${MAKE} -C bitcode all_llvm.bc
 
@@ -198,7 +229,3 @@ s2n/Makefile : ../../Makefile
 
 s2n/s2n.mk : ../../s2n.mk
 	cp $< $@
-
-
-
-
