@@ -299,7 +299,7 @@ int s2n_hybrid_server_key_send(struct s2n_connection *conn, struct s2n_blob *tot
     const struct s2n_kex *hybrid_kex_1 = kex->hybrid[1];
 
     /* Keep a copy to the start of the whole structure for the signature check */
-    total_data_to_sign->data = s2n_stuffer_raw_read(&conn->handshake.io, 0);
+    total_data_to_sign->data = s2n_stuffer_raw_write(&conn->handshake.io, 0);
     notnull_check(total_data_to_sign->data);
 
     struct s2n_blob data_to_verify_0 = {0};
@@ -309,7 +309,6 @@ int s2n_hybrid_server_key_send(struct s2n_connection *conn, struct s2n_blob *tot
     GUARD(s2n_kex_server_key_send(hybrid_kex_1, conn, &data_to_verify_1));
 
     total_data_to_sign->size = data_to_verify_0.size + data_to_verify_1.size;
-    total_data_to_sign->data = data_to_verify_0.data;
     return 0;
 }
 

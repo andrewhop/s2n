@@ -451,11 +451,11 @@ int main(int argc, char *const *argv)
             uint64_t elapsed = time_spec_to_nanoseconds(&end) - time_spec_to_nanoseconds(&start);
             results[i] = elapsed;
 
-            if (i % (int)(BENCHMARK_ROUNDS * .1) == 0){
-                fprintf(stderr, "Round %d of %d\n", i, BENCHMARK_ROUNDS);
+            if (i % 100 == 0){
+                fprintf(stderr, "Round %d of %d, taking %.04f per handshake\n", i, BENCHMARK_ROUNDS, nano_to_milli(elapsed));
             }
 
-            s2n_shutdown(conn, &blocked);
+//            s2n_shutdown(conn, &blocked);
 
             GUARD_EXIT(s2n_connection_free(conn), "Error freeing connection");
 
