@@ -34,8 +34,9 @@
 #include <s2n.h>
 #include "common.h"
 
-#define BENCHMARK_ROUNDS 10000
-
+#define BENCHMARK_ROUNDS 1000
+extern struct timespec start;
+extern struct timespec end;
 void usage()
 {
     fprintf(stderr, "usage: s2nc [options] host [port]\n");
@@ -382,10 +383,10 @@ int main(int argc, char *const *argv)
         exit(1);
     }
     if (benchmark_enabled == 1 && strcmp(benchmark_type, "key_exchange") == 0) {
-        struct timespec start;
-        struct timespec end;
+
         uint64_t results[BENCHMARK_ROUNDS];
         for (int i = 0; i < BENCHMARK_ROUNDS; i ++) {
+
             int connected = 0;
             for (ai = ai_list; ai != NULL; ai = ai->ai_next) {
                 if ((sockfd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol)) == -1) {
@@ -436,7 +437,8 @@ int main(int argc, char *const *argv)
             GUARD_EXIT(s2n_connection_set_fd(conn, sockfd), "Error setting file descriptor");
 
             /* See echo.c */
-            clock_gettime(CLOCK_MONOTONIC, &start);
+//            clock_gettime(CLOCK_MONOTONIC, &start);
+
             s2n_blocked_status blocked;
             do {
                 if (s2n_negotiate(conn, &blocked) < 0) {
@@ -445,7 +447,7 @@ int main(int argc, char *const *argv)
                     break;
                 }
             } while (blocked);
-            clock_gettime(CLOCK_MONOTONIC, &end);
+//            clock_gettime(CLOCK_MONOTONIC, &end);
             uint64_t elapsed = time_spec_to_nanoseconds(&end) - time_spec_to_nanoseconds(&start);
             results[i] = elapsed;
 
@@ -462,9 +464,9 @@ int main(int argc, char *const *argv)
             close(sockfd);
         }
         qsort (results, BENCHMARK_ROUNDS, sizeof(uint64_t), compare);
-        for(int i = 0; i < BENCHMARK_ROUNDS; i++) {
-            printf("%.04f\n", nano_to_milli(results[i]));
-        }
+//        for(int i = 0; i < BENCHMARK_ROUNDS; i++) {
+//            printf("%.04f\n", nano_to_milli(results[i]));
+//        }
 //        printf("P0: %.04f, P50 %.04f, P90: %.04f, p95: %.04f, p99: %.04f, P100: %0.4f milliseconds\n",
         printf("|%.04f|%.04f|%.04f|%.04f|%.04f|%0.4f\n",
                 nano_to_milli(results[0]),

@@ -70,21 +70,21 @@ int negotiate(struct s2n_connection *conn)
         fprintf(stderr, "Could not get actual protocol version\n");
         return -1;
     }
-    printf("CONNECTED:\n");
-    printf("Client hello version: %d\n", client_hello_version);
-    printf("Client protocol version: %d\n", client_protocol_version);
-    printf("Server protocol version: %d\n", server_protocol_version);
-    printf("Actual protocol version: %d\n", actual_protocol_version);
+//    printf("CONNECTED:\n");
+//    printf("Client hello version: %d\n", client_hello_version);
+//    printf("Client protocol version: %d\n", client_protocol_version);
+//    printf("Server protocol version: %d\n", server_protocol_version);
+//    printf("Actual protocol version: %d\n", actual_protocol_version);
 
     if (s2n_get_server_name(conn)) {
-        printf("Server name: %s\n", s2n_get_server_name(conn));
+//        printf("Server name: %s\n", s2n_get_server_name(conn));
     }
 
     if (s2n_get_application_protocol(conn)) {
-        printf("Application protocol: %s\n", s2n_get_application_protocol(conn));
+//        printf("Application protocol: %s\n", s2n_get_application_protocol(conn));
     }
 
-    printf("Curve: %s\n", s2n_connection_get_curve(conn));
+//    printf("Curve: %s\n", s2n_connection_get_curve(conn));
 
     uint32_t length;
     const uint8_t *status = s2n_connection_get_ocsp_response(conn, &length);
@@ -92,7 +92,7 @@ int negotiate(struct s2n_connection *conn)
         fprintf(stderr, "OCSP response received, length %u\n", length);
     }
 
-    printf("Cipher negotiated: %s\n", s2n_connection_get_cipher(conn));
+//    printf("Cipher negotiated: %s\n", s2n_connection_get_cipher(conn));
     if (s2n_connection_is_session_resumed(conn)) {
         printf("Resumed session\n");
     }

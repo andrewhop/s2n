@@ -39,6 +39,8 @@
 #include "utils/s2n_random.h"
 #include "utils/s2n_safety.h"
 
+//struct timespec start;
+
 struct s2n_client_hello *s2n_connection_get_client_hello(struct s2n_connection *conn) {
     if (conn->client_hello.parsed != 1) {
         return NULL;
@@ -326,6 +328,8 @@ int s2n_client_hello_recv(struct s2n_connection *conn)
 
 int s2n_client_hello_send(struct s2n_connection *conn)
 {
+//    clock_gettime(CLOCK_MONOTONIC, &start);
+
     struct s2n_stuffer *out = &conn->handshake.io;
     struct s2n_stuffer client_random = {{0}};
     struct s2n_blob b, r;

@@ -309,6 +309,7 @@ int s2n_hybrid_server_key_send(struct s2n_connection *conn, struct s2n_blob *tot
     GUARD(s2n_kex_server_key_send(hybrid_kex_1, conn, &data_to_verify_1));
 
     total_data_to_sign->size = data_to_verify_0.size + data_to_verify_1.size;
+    total_data_to_sign->data = data_to_verify_0.data;
     return 0;
 }
 

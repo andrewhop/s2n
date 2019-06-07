@@ -679,6 +679,8 @@ static int handshake_read_io(struct s2n_connection *conn)
 
     return 0;
 }
+struct timespec start;
+struct timespec end;
 
 int s2n_negotiate(struct s2n_connection *conn, s2n_blocked_status * blocked)
 {
@@ -690,6 +692,10 @@ int s2n_negotiate(struct s2n_connection *conn, s2n_blocked_status * blocked)
     while (ACTIVE_STATE(conn).writer != 'B') {
         /* Flush any pending I/O or alert messages */
         GUARD(s2n_flush(conn, blocked));
+
+        if(this == 'C' && ACTIVE_STATE(conn).message_type == TLS_CLIENT_HELLO){
+            clock_gettime(CLOCK_MONOTONIC, &start);
+        }
 
         if (ACTIVE_STATE(conn).writer == this) {
             *blocked = S2N_BLOCKED_ON_WRITE;
@@ -719,6 +725,9 @@ int s2n_negotiate(struct s2n_connection *conn, s2n_blocked_status * blocked)
 
                 return -1;
             }
+        }
+        if(this == 'C' && ACTIVE_STATE(conn).message_type == TLS_CLIENT_KEY){
+            clock_gettime(CLOCK_MONOTONIC, &end);
         }
 
         /* If the handshake has just ended, free up memory */

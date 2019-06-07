@@ -32,6 +32,8 @@
 #include "utils/s2n_safety.h"
 #include "utils/s2n_random.h"
 typedef int s2n_kex_client_key_method(const struct s2n_kex *kex, struct s2n_connection *conn, struct s2n_blob *shared_key);
+//struct timespec end;
+
 static int s2n_hybrid_client_action(struct s2n_connection *conn, struct s2n_blob *combined_shared_key,
         s2n_kex_client_key_method kex_method)
 {
@@ -262,5 +264,6 @@ int s2n_client_key_send(struct s2n_connection *conn)
     GUARD(s2n_kex_client_key_send(key_exchange, conn, &shared_key));
 
     GUARD(calculate_keys(conn, &shared_key));
+//    clock_gettime(CLOCK_MONOTONIC, &end);
     return 0;
 }
