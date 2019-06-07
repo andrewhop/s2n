@@ -34,7 +34,7 @@
 #include <s2n.h>
 #include "common.h"
 
-#define BENCHMARK_ROUNDS 1000
+#define BENCHMARK_ROUNDS 10000
 
 void usage()
 {
@@ -448,7 +448,7 @@ int main(int argc, char *const *argv)
             clock_gettime(CLOCK_MONOTONIC, &end);
             uint64_t elapsed = time_spec_to_nanoseconds(&end) - time_spec_to_nanoseconds(&start);
             results[i] = elapsed;
-            
+
             if (i % (int)(BENCHMARK_ROUNDS * .1) == 0){
                 fprintf(stderr, "Round %d of %d\n", i, BENCHMARK_ROUNDS);
             }
@@ -465,7 +465,8 @@ int main(int argc, char *const *argv)
         for(int i = 0; i < BENCHMARK_ROUNDS; i++) {
             printf("%.04f\n", nano_to_milli(results[i]));
         }
-        printf("P0: %.04f, P50 %.04f, P90: %.04f, p95: %.04f, p99: %.04f, P100: %0.4f milliseconds",
+//        printf("P0: %.04f, P50 %.04f, P90: %.04f, p95: %.04f, p99: %.04f, P100: %0.4f milliseconds\n",
+        printf("|%.04f|%.04f|%.04f|%.04f|%.04f|%0.4f\n",
                 nano_to_milli(results[0]),
                 nano_to_milli(results[BENCHMARK_ROUNDS/2]),
                 nano_to_milli(results[(int)(BENCHMARK_ROUNDS * .9)]),
