@@ -730,10 +730,23 @@ const struct s2n_cipher_preferences cipher_preferences_kms_fips_tls_1_2_2018_10 
 
 };
 
+struct s2n_cipher_suite *cipher_suites_sike_only[] = {
+        &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384,
+};
+
+const struct s2n_cipher_preferences cipher_preferences_sike_only = {
+        .count = sizeof(cipher_suites_sike_only) / sizeof(cipher_suites_sike_only[0]),
+        .suites = cipher_suites_sike_only,
+        .minimum_protocol_version = S2N_TLS12,
+        .extension_flag = S2N_ECC_EXTENSION_ENABLED | S2N_SIKE_EXTENSION_ENABLED
+
+};
+
 struct {
     const char *version;
     const struct s2n_cipher_preferences *preferences;
 } selection[] = {
+    { "sike_only", &cipher_preferences_sike_only },
     { "default", &cipher_preferences_20170210 },
     { "default_fips", &cipher_preferences_20170405},
     { "ELBSecurityPolicy-TLS-1-0-2015-04", &elb_security_policy_2015_04},
