@@ -29,6 +29,7 @@
 #include "stuffer/s2n_stuffer.h"
 
 #include "tls/s2n_tls.h"
+#include "utils/s2n_macro_utils.h"
 #include "utils/s2n_safety.h"
 #include "utils/s2n_blob.h"
 
@@ -51,8 +52,8 @@ static int s2n_send_client_signature_algorithms_extension(struct s2n_connection 
     /* Each hash-signature-alg pair is two bytes, and there's another two bytes for
      * the extension length field.
      */
-    uint16_t preferred_hashes_len = sizeof(s2n_preferred_hashes) / sizeof(s2n_preferred_hashes[0]);
-    uint16_t num_signature_algs = sizeof(s2n_preferred_signature_algorithms) / sizeof(s2n_preferred_signature_algorithms[0]);
+    uint16_t preferred_hashes_len = s2n_array_len(s2n_preferred_hashes);
+    uint16_t num_signature_algs = s2n_array_len(s2n_preferred_signature_algorithms);
     uint16_t preferred_hash_sigalg_size = preferred_hashes_len * num_signature_algs * 2;
     uint16_t extension_len_field_size = 2;
 
@@ -65,7 +66,8 @@ static int s2n_send_client_signature_algorithms_extension(struct s2n_connection 
 int s2n_client_extensions_send(struct s2n_connection *conn, struct s2n_stuffer *out)
 {
     uint16_t total_size = 0;
-    uint16_t num_signature_algs = sizeof(s2n_preferred_signature_algorithms) / sizeof(s2n_preferred_signature_algorithms[0]);
+    uint16_t pq_kem_list_size = 0;
+    uint16_t num_signature_algs = s2n_array_len(s2n_preferred_signature_algorithms);
 
     /* Signature algorithms */
     if (conn->actual_protocol_version == S2N_TLS12) {
@@ -104,14 +106,20 @@ int s2n_client_extensions_send(struct s2n_connection *conn, struct s2n_stuffer *
 
     if (s2n_is_ecc_enabled(cipher_preferences)) {
         /* Write ECC extensions: Supported Curves and Supported Point Formats */
-        int ec_curves_count = sizeof(s2n_ecc_supported_curves) / sizeof(s2n_ecc_supported_curves[0]);
+        int ec_curves_count = s2n_array_len(s2n_ecc_supported_curves);
         total_size += 12 + ec_curves_count * 2;
     }
 
-    if (s2n_is_sike_enabled(cipher_preferences)) {
-        int sike_params_count = sizeof(s2n_sike_supported_params) / sizeof(s2n_sike_supported_params[0]);
-        /* 2 for the extension id, 2 for overall length, 2 for length of the list, and each enum is 2 bytes  */
-        total_size += 6 + sike_params_count * 2;
+    /* Each supported kem id is 2 bytes */
+    if (s2n_bike_enabled(cipher_preferences)) {
+        pq_kem_list_size += s2n_array_len(s2n_bike_supported_params) * 2;
+    }
+    if (s2n_sike_enabled(cipher_preferences)) {
+        pq_kem_list_size += s2n_array_len(s2n_sike_supported_params) * 2;
+    }
+    if (pq_kem_list_size > 0) {
+        /* 2 for the extension id, 2 for overall length, 2 for length of the list, and the list size  */
+        total_size += 6 + pq_kem_list_size;
     }
 
     GUARD(s2n_stuffer_write_uint16(out, total_size));
@@ -181,7 +189,7 @@ int s2n_client_extensions_send(struct s2n_connection *conn, struct s2n_stuffer *
      * and the Supported Point Formats Extension.
      */
     if (s2n_is_ecc_enabled(cipher_preferences)) {
-        int ec_curves_count = sizeof(s2n_ecc_supported_curves) / sizeof(s2n_ecc_supported_curves[0]);
+        int ec_curves_count = s2n_array_len(s2n_ecc_supported_curves);
         GUARD(s2n_stuffer_write_uint16(out, TLS_EXTENSION_ELLIPTIC_CURVES));
         GUARD(s2n_stuffer_write_uint16(out, 2 + ec_curves_count * 2));
         /* Curve list len */
@@ -199,15 +207,24 @@ int s2n_client_extensions_send(struct s2n_connection *conn, struct s2n_stuffer *
         GUARD(s2n_stuffer_write_uint8(out, 0));
     }
 
-    if (s2n_is_sike_enabled(cipher_preferences)) {
-        int sike_params_count = sizeof(s2n_sike_supported_params) / sizeof(s2n_sike_supported_params[0]);
+    if (pq_kem_list_size > 0) {
         GUARD(s2n_stuffer_write_uint16(out, TLS_EXTENSION_PQ_KEM_PARAMETERS));
-        /* Overall length */
-        GUARD(s2n_stuffer_write_uint16(out, 2 + sike_params_count * 2));
+        /* Overall extension length */
+        GUARD(s2n_stuffer_write_uint16(out, 2 + pq_kem_list_size));
         /* Length of parameters in bytes */
-        GUARD(s2n_stuffer_write_uint16(out, sike_params_count * 2));
-        for (int i = 0; i < sike_params_count; i++) {
-            GUARD(s2n_stuffer_write_uint16(out, s2n_sike_supported_params[i].kem_extension_id));
+        GUARD(s2n_stuffer_write_uint16(out, pq_kem_list_size));
+
+        if (s2n_bike_enabled(cipher_preferences)) {
+            int bike_params_count = s2n_array_len(s2n_bike_supported_params);
+            for (int i = 0; i < bike_params_count; i++) {
+                GUARD(s2n_stuffer_write_uint16(out, s2n_bike_supported_params[i].kem_extension_id));
+            }
+        }
+        if (s2n_sike_enabled(cipher_preferences)) {
+            int sike_params_count = s2n_array_len(s2n_sike_supported_params);
+            for (int i = 0; i < sike_params_count; i++) {
+                GUARD(s2n_stuffer_write_uint16(out, s2n_sike_supported_params[i].kem_extension_id));
+            }
         }
     }
 
@@ -494,10 +511,15 @@ static int s2n_recv_pq_kem_extension(struct s2n_connection *conn, struct s2n_stu
     proposed_kems.data = s2n_stuffer_raw_read(extension, proposed_kems.size);
     notnull_check(proposed_kems.data);
 
-    const struct s2n_kem *match = NULL;
-    int num_params = sizeof(s2n_sike_supported_params) / sizeof(s2n_sike_supported_params[0]);
-    s2n_kem_find_supported_kem(&proposed_kems, s2n_sike_supported_params, num_params, &match);
-    conn->secure.s2n_kem_keys.negotiated_kem = match;
+    const struct s2n_kem *bike_match = NULL;
+    int num_bike_params = s2n_array_len(s2n_bike_supported_params);
+    s2n_kem_find_supported_kem(&proposed_kems, s2n_bike_supported_params, num_bike_params, &bike_match);
+    conn->secure.mutual_bike_kem = bike_match;
+
+    const struct s2n_kem *sike_match = NULL;
+    int num_sike_params = s2n_array_len(s2n_sike_supported_params);
+    s2n_kem_find_supported_kem(&proposed_kems, s2n_sike_supported_params, num_sike_params, &sike_match);
+    conn->secure.mutual_sike_kem = sike_match;
 
     return 0;
 }
