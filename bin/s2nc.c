@@ -35,8 +35,8 @@
 #include <s2n.h>
 #include "common.h"
 
-#define BENCHMARK_ROUNDS 10
-#define NUM_CIPHERS 2
+#define BENCHMARK_ROUNDS 10000
+#define NUM_CIPHERS 3
 extern struct timespec start;
 extern struct timespec end;
 void usage()
@@ -363,6 +363,7 @@ int main(int argc, char *const *argv)
     const char *prefrences[NUM_CIPHERS];
     prefrences[0] = "ECDHE-RSA-AES256-GCM-SHA384";
     prefrences[1] = "ECDHE-SIKE-RSA-AES256-GCM-SHA384";
+    prefrences[2] = "ECDHE-BIKE-RSA-AES256-GCM-SHA384";
 
     uint64_t results[NUM_CIPHERS][BENCHMARK_ROUNDS];
     for (int round = 0; round < BENCHMARK_ROUNDS; round ++) {

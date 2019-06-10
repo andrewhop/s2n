@@ -730,6 +730,17 @@ const struct s2n_cipher_preferences cipher_preferences_kms_fips_tls_1_2_2018_10 
 
 };
 
+struct s2n_cipher_suite *cipher_suites_bike_only[] = {
+        &s2n_ecdhe_bike_rsa_with_aes_256_gcm_sha384,
+};
+
+const struct s2n_cipher_preferences cipher_preferences_bike_only = {
+        .count = sizeof(cipher_suites_bike_only) / sizeof(cipher_suites_bike_only[0]),
+        .suites = cipher_suites_bike_only,
+        .minimum_protocol_version = S2N_TLS12,
+        .extension_flag = S2N_ECC_EXTENSION_ENABLED | S2N_BIKE_EXTENSION_ENABLED
+};
+
 struct s2n_cipher_suite *cipher_suites_sike_only[] = {
         &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384,
 };
@@ -755,19 +766,21 @@ const struct s2n_cipher_preferences cipher_preferences_ecdhe_only = {
 struct s2n_cipher_suite *cipher_suites_server[] = {
         &s2n_ecdhe_rsa_with_aes_256_gcm_sha384,
         &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384,
+        &s2n_ecdhe_bike_rsa_with_aes_256_gcm_sha384,
 };
 
 const struct s2n_cipher_preferences cipher_preferences_server = {
         .count = sizeof(cipher_suites_server) / sizeof(cipher_suites_server[0]),
         .suites = cipher_suites_ecdhe_only,
         .minimum_protocol_version = S2N_TLS12,
-        .extension_flag = S2N_ECC_EXTENSION_ENABLED
+        .extension_flag = S2N_ECC_EXTENSION_ENABLED | S2N_BIKE_EXTENSION_ENABLED | S2N_SIKE_EXTENSION_ENABLED
 };
 
 struct {
     const char *version;
     const struct s2n_cipher_preferences *preferences;
 } selection[] = {
+    { "ECDHE-BIKE-RSA-AES256-GCM-SHA384", &cipher_preferences_bike_only },
     { "ECDHE-SIKE-RSA-AES256-GCM-SHA384", &cipher_preferences_sike_only },
     { "ECDHE-RSA-AES256-GCM-SHA384", &cipher_preferences_ecdhe_only },
     { "server", &cipher_preferences_server },

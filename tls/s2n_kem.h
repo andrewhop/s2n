@@ -44,7 +44,7 @@ struct s2n_kem_keypair {
 
 extern const struct s2n_kem s2n_bike_supported_params[1];
 extern const struct s2n_kem s2n_sike_supported_params[1];
-extern const struct s2n_kem s2n_bike_supported_params[1];
+extern const struct s2n_kem s2n_all_supported_kems[2];
 
 extern int s2n_kem_generate_keypair(struct s2n_kem_keypair *kem_keys);
 

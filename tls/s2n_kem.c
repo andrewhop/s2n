@@ -51,7 +51,7 @@ const struct s2n_kem s2n_sike_supported_params[1] = {
         },
 };
 
-const struct s2n_kem s2n_bike_supported_params[1] = {
+const struct s2n_kem s2n_all_supported_kems[2] = {
         {
                 .kem_extension_id = BIKE1r1_Level1,
                 .public_key_length = BIKE1_L1_PUBLIC_KEY_BYTES,
@@ -61,6 +61,16 @@ const struct s2n_kem s2n_bike_supported_params[1] = {
                 .generate_keypair = &BIKE1_L1_crypto_kem_keypair,
                 .encapsulate = &BIKE1_L1_crypto_kem_enc,
                 .decapsulate = &BIKE1_L1_crypto_kem_dec,
+        },
+        {
+                .kem_extension_id = SIKEp503r1_KEM,
+                .public_key_length = SIKE_P503_PUBLIC_KEY_BYTES,
+                .private_key_length = SIKE_P503_SECRET_KEY_BYTES,
+                .shared_secret_key_length = SIKE_P503_SHARED_SECRET_BYTES,
+                .ciphertext_length = SIKE_P503_CIPHERTEXT_BYTES,
+                .generate_keypair = &SIKE_P503_crypto_kem_keypair,
+                .encapsulate = &SIKE_P503_crypto_kem_enc,
+                .decapsulate = &SIKE_P503_crypto_kem_dec,
         },
 };
 

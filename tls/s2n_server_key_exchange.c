@@ -166,8 +166,8 @@ int s2n_kem_server_key_recv_parse_data(struct s2n_connection *conn, struct s2n_k
 
     /* Check that the server's requested kem is supported by the client */
     const struct s2n_kem *match = NULL;
-    int num_params = sizeof(s2n_sike_supported_params) / sizeof(s2n_sike_supported_params[0]);
-    S2N_ERROR_IF(s2n_kem_find_supported_kem(&kem_data->kem_name, s2n_sike_supported_params, num_params, &match) != 0, S2N_ERR_KEM_UNSUPPORTED_PARAMS);
+    int num_params = sizeof(s2n_all_supported_kems) / sizeof(s2n_all_supported_kems[0]);
+    S2N_ERROR_IF(s2n_kem_find_supported_kem(&kem_data->kem_name, s2n_all_supported_kems, num_params, &match) != 0, S2N_ERR_KEM_UNSUPPORTED_PARAMS);
     conn->secure.s2n_kem_keys.negotiated_kem = match;
 
     S2N_ERROR_IF(kem_data->raw_public_key.size != conn->secure.s2n_kem_keys.negotiated_kem->public_key_length, S2N_ERR_BAD_MESSAGE);
