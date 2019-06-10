@@ -752,12 +752,25 @@ const struct s2n_cipher_preferences cipher_preferences_ecdhe_only = {
         .extension_flag = S2N_ECC_EXTENSION_ENABLED
 };
 
+struct s2n_cipher_suite *cipher_suites_server[] = {
+        &s2n_ecdhe_rsa_with_aes_256_gcm_sha384,
+        &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384,
+};
+
+const struct s2n_cipher_preferences cipher_preferences_server = {
+        .count = sizeof(cipher_suites_server) / sizeof(cipher_suites_server[0]),
+        .suites = cipher_suites_ecdhe_only,
+        .minimum_protocol_version = S2N_TLS12,
+        .extension_flag = S2N_ECC_EXTENSION_ENABLED
+};
+
 struct {
     const char *version;
     const struct s2n_cipher_preferences *preferences;
 } selection[] = {
-    { "sike_only", &cipher_preferences_sike_only },
-    { "ecdhe_only", &cipher_preferences_ecdhe_only },
+    { "ECDHE-SIKE-RSA-AES256-GCM-SHA384", &cipher_preferences_sike_only },
+    { "ECDHE-RSA-AES256-GCM-SHA384", &cipher_preferences_ecdhe_only },
+    { "server", &cipher_preferences_server },
     { "default", &cipher_preferences_20170210 },
     { "default_fips", &cipher_preferences_20170405},
     { "ELBSecurityPolicy-TLS-1-0-2015-04", &elb_security_policy_2015_04},

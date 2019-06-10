@@ -21,6 +21,7 @@
 #include <netdb.h>
 #include <time.h>
 #include <inttypes.h>
+#include <sys/time.h>
 
 #include <stdlib.h>
 #include <signal.h>
@@ -34,7 +35,8 @@
 #include <s2n.h>
 #include "common.h"
 
-#define BENCHMARK_ROUNDS 1000
+#define BENCHMARK_ROUNDS 10
+#define NUM_CIPHERS 2
 extern struct timespec start;
 extern struct timespec end;
 void usage()
@@ -232,7 +234,6 @@ int main(int argc, char *const *argv)
 {
     struct addrinfo hints, *ai_list, *ai;
     int r, sockfd = 0;
-    ssize_t session_state_length = 0;
     uint8_t *session_state = NULL;
     /* Optional args */
     const char *alpn_protocols = NULL;
@@ -243,22 +244,16 @@ int main(int argc, char *const *argv)
     const char *benchmark_type = NULL;
     uint16_t mfl_value = 0;
     uint8_t insecure = 0;
-    int reconnect = 0;
     uint8_t session_ticket = 1;
     s2n_status_request_type type = S2N_STATUS_REQUEST_NONE;
-    uint32_t dyn_rec_threshold = 0;
-    uint8_t dyn_rec_timeout = 0;
     /* required args */
-    const char *cipher_prefs = "default";
     const char *host = NULL;
     struct verify_data unsafe_verify_data;
     const char *port = "443";
     int echo_input = 0;
-    int use_corked_io = 0;
 
     static struct option long_options[] = {
         {"alpn", required_argument, 0, 'a'},
-        {"ciphers", required_argument, 0, 'c'},
         {"echo", required_argument, 0, 'e'},
         {"help", no_argument, 0, 'h'},
         {"name", required_argument, 0, 'n'},
@@ -285,12 +280,6 @@ int main(int argc, char *const *argv)
         case 'a':
             alpn_protocols = optarg;
             break;
-        case 'C':
-            use_corked_io = 1;
-            break;
-        case 'c':
-            cipher_prefs = optarg;
-            break;
         case 'e':
             echo_input = 1;
             break;
@@ -315,20 +304,8 @@ int main(int argc, char *const *argv)
         case 'i':
             insecure = 1;
             break;
-        case 'r':
-            reconnect = 5;
-            break;
         case 'T':
             session_ticket = 0;
-            break;
-        case 't':
-            dyn_rec_timeout = (uint8_t) MIN(255, atoi(optarg));
-            break;
-        case 'D':
-            dyn_rec_threshold = strtoul(optarg, 0, 10);
-            if (errno == ERANGE) {
-              dyn_rec_threshold = 0;      
-            }
             break;
         case 'b':
             benchmark_enabled = 1;
@@ -382,10 +359,14 @@ int main(int argc, char *const *argv)
         fprintf(stderr, "error: %s\n", gai_strerror(r));
         exit(1);
     }
-    if (benchmark_enabled == 1 && strcmp(benchmark_type, "key_exchange") == 0) {
 
-        uint64_t results[BENCHMARK_ROUNDS];
-        for (int i = 0; i < BENCHMARK_ROUNDS; i ++) {
+    const char *prefrences[NUM_CIPHERS];
+    prefrences[0] = "ECDHE-RSA-AES256-GCM-SHA384";
+    prefrences[1] = "ECDHE-SIKE-RSA-AES256-GCM-SHA384";
+
+    uint64_t results[NUM_CIPHERS][BENCHMARK_ROUNDS];
+    for (int round = 0; round < BENCHMARK_ROUNDS; round ++) {
+        for (int cipher_to_test = 0; cipher_to_test < NUM_CIPHERS; cipher_to_test++) {
 
             int connected = 0;
             for (ai = ai_list; ai != NULL; ai = ai->ai_next) {
@@ -409,7 +390,7 @@ int main(int argc, char *const *argv)
             }
 
             struct s2n_config *config = s2n_config_new();
-            setup_s2n_config(config, cipher_prefs, type, &unsafe_verify_data, host, alpn_protocols, mfl_value);
+            setup_s2n_config(config, prefrences[cipher_to_test], type, &unsafe_verify_data, host, alpn_protocols, mfl_value);
 
             if (ca_file || ca_dir) {
                 if (s2n_config_set_verification_ca_location(config, ca_file, ca_dir) < 0) {
@@ -436,24 +417,28 @@ int main(int argc, char *const *argv)
 
             GUARD_EXIT(s2n_connection_set_fd(conn, sockfd), "Error setting file descriptor");
 
-            /* See echo.c */
-//            clock_gettime(CLOCK_MONOTONIC, &start);
-
             s2n_blocked_status blocked;
             do {
                 if (s2n_negotiate(conn, &blocked) < 0) {
-                    fprintf(stderr, "Failed to negotiate: '%s'. %s\n", s2n_strerror(s2n_errno, "EN"), s2n_strerror_debug(s2n_errno, "EN"));
+                    fprintf(stderr, "Failed to negotiate: '%s'. %s\n", s2n_strerror(s2n_errno, "EN"),
+                            s2n_strerror_debug(s2n_errno, "EN"));
                     fprintf(stderr, "Alert: %d\n", s2n_connection_get_alert(conn));
                     break;
                 }
             } while (blocked);
 //            clock_gettime(CLOCK_MONOTONIC, &end);
             uint64_t elapsed = time_spec_to_nanoseconds(&end) - time_spec_to_nanoseconds(&start);
-            results[i] = elapsed;
+            results[cipher_to_test][round] = elapsed;
 
-            if (i % 100 == 0){
-                fprintf(stderr, "Round %d of %d, taking %.04f per handshake\n", i, BENCHMARK_ROUNDS, nano_to_milli(elapsed));
-            }
+            struct timeval tv;
+
+            gettimeofday(&tv, NULL);
+            unsigned long long millisecondsSinceEpoch =
+                    (unsigned long long) (tv.tv_sec) * 1000 + (unsigned long long) (tv.tv_usec) / 1000;
+
+
+            printf("%llu, %s, %.04f\n", millisecondsSinceEpoch, s2n_connection_get_cipher(conn),
+                   nano_to_milli(elapsed));
 
 //            s2n_shutdown(conn, &blocked);
 
@@ -463,125 +448,21 @@ int main(int argc, char *const *argv)
 
             close(sockfd);
         }
-        qsort (results, BENCHMARK_ROUNDS, sizeof(uint64_t), compare);
+    }
+    for (int i = 0; i < NUM_CIPHERS; i++) {
+        qsort(results[i], BENCHMARK_ROUNDS, sizeof(uint64_t), compare);
 //        for(int i = 0; i < BENCHMARK_ROUNDS; i++) {
 //            printf("%.04f\n", nano_to_milli(results[i]));
 //        }
 //        printf("P0: %.04f, P50 %.04f, P90: %.04f, p95: %.04f, p99: %.04f, P100: %0.4f milliseconds\n",
-        printf("|%.04f|%.04f|%.04f|%.04f|%.04f|%0.4f\n",
-                nano_to_milli(results[0]),
-                nano_to_milli(results[BENCHMARK_ROUNDS/2]),
-                nano_to_milli(results[(int)(BENCHMARK_ROUNDS * .9)]),
-                nano_to_milli(results[(int)(BENCHMARK_ROUNDS * .95)]),
-                nano_to_milli(results[(int)(BENCHMARK_ROUNDS * .99)]),
-                nano_to_milli(results[BENCHMARK_ROUNDS - 1]));
-
-
-    } else {
-        do {
-            int connected = 0;
-            for (ai = ai_list; ai != NULL; ai = ai->ai_next) {
-                if ((sockfd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol)) == -1) {
-                    continue;
-                }
-
-                if (connect(sockfd, ai->ai_addr, ai->ai_addrlen) == -1) {
-                    close(sockfd);
-                    continue;
-                }
-
-                connected = 1;
-                /* connect() succeeded */
-                break;
-            }
-
-            if (connected == 0) {
-                fprintf(stderr, "Failed to connect to %s:%s\n", host, port);
-                exit(1);
-            }
-
-            struct s2n_config *config = s2n_config_new();
-            setup_s2n_config(config, cipher_prefs, type, &unsafe_verify_data, host, alpn_protocols, mfl_value);
-
-            if (ca_file || ca_dir) {
-                if (s2n_config_set_verification_ca_location(config, ca_file, ca_dir) < 0) {
-                    print_s2n_error("Error setting CA file for trust store.");
-                }
-            } else if (insecure) {
-                GUARD_EXIT(s2n_config_disable_x509_verification(config), "Error disabling X.509 validation");
-            }
-
-            if (session_ticket) {
-                GUARD_EXIT(s2n_config_set_session_tickets_onoff(config, 1), "Error enabling session tickets");
-            }
-
-            struct s2n_connection *conn = s2n_connection_new(S2N_CLIENT);
-
-            if (conn == NULL) {
-                print_s2n_error("Error getting new connection");
-                exit(1);
-            }
-
-            GUARD_EXIT(s2n_connection_set_config(conn, config), "Error setting configuration");
-
-            GUARD_EXIT(s2n_set_server_name(conn, server_name), "Error setting server name");
-
-            GUARD_EXIT(s2n_connection_set_fd(conn, sockfd), "Error setting file descriptor");
-
-            if (use_corked_io) {
-                GUARD_EXIT(s2n_connection_use_corked_io(conn), "Error setting corked io");
-            }
-
-            /* Update session state in connection if exists */
-            if (session_state_length > 0) {
-                GUARD_EXIT(s2n_connection_set_session(conn, session_state, session_state_length),
-                           "Error setting session state in connection");
-            }
-
-            /* See echo.c */
-            int ret = negotiate(conn);
-
-            if (ret != 0) {
-                /* Error is printed in negotiate */
-                return -1;
-            }
-
-            printf("Connected to %s:%s\n", host, port);
-
-            /* Save session state from connection if reconnect is enabled */
-            if (reconnect > 0) {
-                if (!session_ticket && s2n_connection_get_session_id_length(conn) <= 0) {
-                    printf("Endpoint sent empty session id so cannot resume session\n");
-                    exit(1);
-                }
-                free(session_state);
-                session_state_length = s2n_connection_get_session_length(conn);
-                session_state = calloc(session_state_length, sizeof(uint8_t));
-                if (s2n_connection_get_session(conn, session_state, session_state_length) != session_state_length) {
-                    print_s2n_error("Error getting serialized session state");
-                    exit(1);
-                }
-            }
-
-            if (dyn_rec_threshold > 0 && dyn_rec_timeout > 0) {
-                s2n_connection_set_dynamic_record_threshold(conn, dyn_rec_threshold, dyn_rec_timeout);
-            }
-
-            if (echo_input == 1) {
-                echo(conn, sockfd);
-            }
-
-            s2n_blocked_status blocked;
-            s2n_shutdown(conn, &blocked);
-
-            GUARD_EXIT(s2n_connection_free(conn), "Error freeing connection");
-
-            GUARD_EXIT(s2n_config_free(config), "Error freeing configuration");
-
-            close(sockfd);
-            reconnect--;
-
-        } while (reconnect >= 0);
+        printf("|%s|%.04f|%.04f|%.04f|%.04f|%.04f|%0.4f\n",
+               prefrences[i],
+               nano_to_milli(results[i][0]),
+               nano_to_milli(results[i][BENCHMARK_ROUNDS / 2]),
+               nano_to_milli(results[i][(int) (BENCHMARK_ROUNDS * .9)]),
+               nano_to_milli(results[i][(int) (BENCHMARK_ROUNDS * .95)]),
+               nano_to_milli(results[i][(int) (BENCHMARK_ROUNDS * .99)]),
+               nano_to_milli(results[i][BENCHMARK_ROUNDS - 1]));
     }
 
     GUARD_EXIT(s2n_cleanup(), "Error running s2n_cleanup()");
