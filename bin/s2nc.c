@@ -362,8 +362,8 @@ int main(int argc, char *const *argv)
 
     const char *prefrences[NUM_CIPHERS];
     prefrences[0] = "ECDHE-RSA-AES256-GCM-SHA384";
-    prefrences[1] = "ECDHE-SIKE-RSA-AES256-GCM-SHA384";
-    prefrences[2] = "ECDHE-BIKE-RSA-AES256-GCM-SHA384";
+    prefrences[1] = "ECDHE-BIKE-RSA-AES256-GCM-SHA384";
+    prefrences[2] = "ECDHE-SIKE-RSA-AES256-GCM-SHA384";
 
     uint64_t results[NUM_CIPHERS][BENCHMARK_ROUNDS];
     for (int round = 0; round < BENCHMARK_ROUNDS; round ++) {

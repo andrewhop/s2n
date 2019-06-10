@@ -23,6 +23,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
+
 #if TCP_CORK
     #define S2N_CORK        TCP_CORK
     #define S2N_CORK_ON     1
@@ -114,7 +119,19 @@ int s2n_socket_was_corked(struct s2n_connection *conn)
 
     return io_ctx->original_cork_val;
 }
+int s2n_set_quickack_and_no_delay(struct s2n_connection *conn)
+{
+    int optval = 1;
 
+    struct s2n_socket_write_io_context *w_io_ctx = (struct s2n_socket_write_io_context *) conn->send_io_context;
+    notnull_check(w_io_ctx);
+
+    /* Ignore the return value, if it fails it fails */
+    setsockopt(w_io_ctx->fd, IPPROTO_TCP, TCP_QUICKACK, &optval, sizeof(optval));
+    setsockopt(w_io_ctx->fd, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
+
+    return 0;
+}
 int s2n_socket_write_cork(struct s2n_connection *conn)
 {
 #ifdef S2N_CORK

@@ -253,6 +253,8 @@ message_type_t s2n_conn_get_current_message_type(struct s2n_connection *conn)
 
 static int s2n_advance_message(struct s2n_connection *conn)
 {
+    GUARD(s2n_set_quickack_and_no_delay(conn));
+
     char this = 'S';
     if (conn->mode == S2N_CLIENT) {
         this = 'C';
@@ -271,6 +273,8 @@ static int s2n_advance_message(struct s2n_connection *conn)
     if (ACTIVE_STATE(conn).writer == PREVIOUS_STATE(conn).writer) {
         return 0;
     }
+
+
 
     /* We're the new writer */
     if (ACTIVE_STATE(conn).writer == this) {
@@ -726,7 +730,7 @@ int s2n_negotiate(struct s2n_connection *conn, s2n_blocked_status * blocked)
                 return -1;
             }
         }
-        if(this == 'C' && ACTIVE_STATE(conn).message_type == TLS_CLIENT_KEY){
+        if(this == 'C' && ACTIVE_STATE(conn).message_type == TLS_SERVER_FINISHED){
             clock_gettime(CLOCK_MONOTONIC, &end);
         }
 
