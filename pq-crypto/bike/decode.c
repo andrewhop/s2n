@@ -234,15 +234,12 @@ ret_t decode(OUT e_t *e,
     }
 
     PTR(s).dup1 = PTR(original_s).dup1;
-
-    // Fixing ctx.delta, in order to optimize the decoding failure path;
     ctx.delta = MAX_DELTA;
 
     // Reset the error
     memset(e, 0, sizeof(*e));
 
     // Reset the syndrome
-    // Copying dup1 twice is faster than copying dup1+dup2.
     PTR(s).dup1 = PTR(original_s).dup1;
     PTR(s).dup2 = PTR(original_s).dup1;
 
@@ -257,12 +254,6 @@ ret_t decode(OUT e_t *e,
         ctx.threshold = get_threshold(&PTR(s).dup1);
         GUARD(fix_error1(s, e, &ctx, sk, ct));
 
-        // Decoding Step I: check if syndrome is 0 (successful decoding)
-        if (count_ones(PTR(s).dup1.raw, sizeof(PTR(s).dup1)) <= u)
-        {
-            break;
-        }
-
         DMSG("    Weight of e: %lu\n", count_ones(e->raw, sizeof(*e)));
         DMSG("    Weight of syndrome: %lu\n", count_ones(PTR(s).dup1.raw, sizeof(PTR(s).dup1)));
 
@@ -275,23 +266,11 @@ ret_t decode(OUT e_t *e,
         DMSG("    Weight of e: %lu\n", count_ones(e->raw, sizeof(*e)));
         DMSG("    Weight of syndrome: %lu\n", count_ones(PTR(s).dup1.raw, sizeof(PTR(s).dup1)));
 
-        // Decoding Step II: Check if syndrome is 0 (successful decoding)
-        if (count_ones(PTR(s).dup1.raw, sizeof(PTR(s).dup1)) <= u)
-        {
-            break;
-        }
-
         // Recompute UPC
         compute_counter_of_unsat(ctx.upc, s->u.raw, &inv_h_compressed[0], &inv_h_compressed[1]);
 
         // Decoding Step III: Flip all gray positions associated to high number of UPC
         GUARD(fix_gray_error(s, e, &ctx, sk, ct));
-
-        // Decoding Step III: Check for successful decoding
-        if (count_ones(PTR(s).dup1.raw, sizeof(PTR(s).dup1)) <= u)
-        {
-            break;
-        }
     }
 
     if(count_ones(PTR(s).dup1.raw, sizeof(PTR(s).dup1)) > u)
