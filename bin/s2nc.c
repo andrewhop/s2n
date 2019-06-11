@@ -35,7 +35,7 @@
 #include <s2n.h>
 #include "common.h"
 
-#define BENCHMARK_ROUNDS 10000
+#define BENCHMARK_ROUNDS 100
 #define NUM_CIPHERS 3
 extern struct timespec start;
 extern struct timespec end;
@@ -418,6 +418,7 @@ int main(int argc, char *const *argv)
 
             GUARD_EXIT(s2n_connection_set_fd(conn, sockfd), "Error setting file descriptor");
 
+            uint64_t count = 0;
             s2n_blocked_status blocked;
             do {
                 if (s2n_negotiate(conn, &blocked) < 0) {
@@ -426,10 +427,10 @@ int main(int argc, char *const *argv)
                     fprintf(stderr, "Alert: %d\n", s2n_connection_get_alert(conn));
                     break;
                 }
-            } while (blocked);
-//            clock_gettime(CLOCK_MONOTONIC, &end);
+                count++;
+            } while (blocked && count < 50);
             uint64_t elapsed = time_spec_to_nanoseconds(&end) - time_spec_to_nanoseconds(&start);
-            results[cipher_to_test][round] = elapsed;
+            results[cipher_to_test][round] = blocked ? -1 : elapsed;
 
             struct timeval tv;
 
@@ -439,9 +440,9 @@ int main(int argc, char *const *argv)
 
 
             printf("%llu, %s, %.04f\n", millisecondsSinceEpoch, s2n_connection_get_cipher(conn),
-                   nano_to_milli(elapsed));
+                   blocked ? -1 : nano_to_milli(elapsed));
 
-//            s2n_shutdown(conn, &blocked);
+            s2n_shutdown(conn, &blocked);
 
             GUARD_EXIT(s2n_connection_free(conn), "Error freeing connection");
 
