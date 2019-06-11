@@ -40,15 +40,13 @@ void print_s2n_error(const char *app_error)
 int negotiate(struct s2n_connection *conn)
 {
     s2n_blocked_status blocked;
-    uint64_t count = 0;
     do {
         if (s2n_negotiate(conn, &blocked) < 0) {
             fprintf(stderr, "Failed to negotiate: '%s'. %s\n", s2n_strerror(s2n_errno, "EN"), s2n_strerror_debug(s2n_errno, "EN"));
             fprintf(stderr, "Alert: %d\n", s2n_connection_get_alert(conn));
             return -1;
         }
-        count++;
-    } while (blocked && count < 25);
+    } while (blocked);
     if (blocked) {
         fprintf(stderr, "Failed to negotiate: '%s'. %s\n", s2n_strerror(s2n_errno, "EN"), s2n_strerror_debug(s2n_errno, "EN"));
         fprintf(stderr, "Alert: %d\n", s2n_connection_get_alert(conn));
