@@ -35,7 +35,7 @@
 #include <s2n.h>
 #include "common.h"
 
-#define BENCHMARK_ROUNDS 100
+#define BENCHMARK_ROUNDS 10000
 #define NUM_CIPHERS 3
 extern struct timespec start;
 extern struct timespec end;
