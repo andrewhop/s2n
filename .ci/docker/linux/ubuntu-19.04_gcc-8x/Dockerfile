@@ -31,7 +31,7 @@ RUN set -ex && \
 RUN set -ex && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     gcc-8=8.3.0-6ubuntu1 \
-    g++-8=8.3.0-6ubuntu1
+    g++-8=8.3.0-6ubuntu1 && \
     make=4.2.1-1.2
 
 RUN set -ex && \
