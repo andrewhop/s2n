@@ -34,6 +34,7 @@ RUN set -ex && \
     g++-8=8.3.0-6ubuntu1 \
     curl=7.64.0-2ubuntu1.2 \
     unzip=6.0-22ubuntu1 \
+    perl=5.28.1-6 \
     make=4.2.1-1.2 && \
     mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP
 
@@ -45,7 +46,7 @@ RUN set -ex && \
     /tmp/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR
 
 RUN set -ex && \
-    apt-get remove -y curl unzip g++-8 && \
+    apt-get remove -y curl unzip g++-8 perl && \
     apt-get autoremove --purge -y && \
     apt-get clean && \
     apt-get autoclean && \
