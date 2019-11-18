@@ -19,7 +19,7 @@ SHELL ["/bin/bash", "-c"]
 RUN set -ex && \
     apt-get update
 
-# clang=1:8.0-48~exp1ubuntu1 aka clang 8.0.0 is the latest version of clang if you run `apt-cache policy clang`
+# gcc-8=8.3.0-1ubuntu3 aka gcc 8.3.0 is the latest version of gcc if you run `apt-cache policy gcc`
 RUN set -ex && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     clang=1:8.0-48~exp1ubuntu1 \
@@ -31,3 +31,4 @@ RUN set -ex && \
     apt-get clean && \
     apt-get autoclean && \
     rm -rf /tmp/*
+

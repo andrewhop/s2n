@@ -16,17 +16,31 @@
 FROM ubuntu:disco-20191030
 
 SHELL ["/bin/bash", "-c"]
+# ENV variables are avliable when the image (and thus the CodeBuild build) are running
+ENV OPENSSL_1_1_1_INSTALL_DIR=/test-deps/openssl-1.1.1 \
+    PYTHON_INSTALL_DIR=/test-deps/python
+
+# ARG varliable are only avliable while building the image
+ARG PYTHON_TEMP=/tmp/python \
+    OPENSSL_TEMP=/tmp/openssl
+
 RUN set -ex && \
     apt-get update
 
-# gcc-8=8.3.0-1ubuntu3 aka gcc 8.3.0 is the latest version of gcc if you run `apt-cache policy gcc`
+# clang=1:8.0-48~exp1ubuntu1 aka clang 8.0.0 is the latest version of clang if you run `apt-cache policy clang`
 RUN set -ex && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     gcc-8=8.3.0-6ubuntu1 \
-    make=4.2.1-1.2 \
-    libssl-dev=1.1.1b-1ubuntu2.4
+    g++-8=8.3.0-6ubuntu1
+    make=4.2.1-1.2
 
 RUN set -ex && \
+    mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP && \
+    ./setup_scripts/install_openssl_1_1_1.sh $OPENSSL_TEMP $OPENSSL_1_1_1_INSTALL_DIR && \
+    ./setup_scripts/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR
+
+RUN set -ex && \
+    apt-get remove g++-8 -y && \
     apt-get autoremove --purge -y && \
     apt-get clean && \
     apt-get autoclean && \

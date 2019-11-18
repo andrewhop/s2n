@@ -16,10 +16,8 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - export CC=gcc-8
-      - export CXX=g++-8
-      - export NUM_CORES=`nproc --all`
-      - prlimit --pid "$$" --memlock=unlimited:unlimited
+      - export CC=clang-8
+      - export CXX=clang++-8
   build:
     commands:
-      - make -j $NUM_CORES
+      - .ci/codebuild/run_unit_and_integ_tests.sh
