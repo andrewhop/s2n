@@ -24,6 +24,11 @@ ENV OPENSSL_1_1_1_INSTALL_DIR=/test-deps/openssl-1.1.1 \
 ARG PYTHON_TEMP=/tmp/python
 ARG OPENSSL_TEMP=/tmp/openssl
 
+RUN mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP
+
+COPY setup_scripts/install_openssl_1_1_1.sh /tmp/install_openssl_1_1_1.sh
+COPY setup_scripts/install_python.sh /tmp/install_python.sh
+
 RUN set -ex && \
     apt-get update
 
@@ -34,10 +39,10 @@ RUN set -ex && \
     g++-8=8.3.0-6ubuntu1 && \
     make=4.2.1-1.2
 
+
 RUN set -ex && \
-    mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP && \
-    ./setup_scripts/install_openssl_1_1_1.sh $OPENSSL_TEMP $OPENSSL_1_1_1_INSTALL_DIR && \
-    ./setup_scripts/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR
+    /tmp/install_openssl_1_1_1.sh $OPENSSL_TEMP $OPENSSL_1_1_1_INSTALL_DIR && \
+    /tmp/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR
 
 RUN set -ex && \
     apt-get remove g++-8 -y && \
