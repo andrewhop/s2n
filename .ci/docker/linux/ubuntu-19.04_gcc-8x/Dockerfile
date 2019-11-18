@@ -45,7 +45,7 @@ RUN set -ex && \
     /tmp/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR
 
 RUN set -ex && \
-    apt-get remove -y curl unzip g++-8
+    apt-get remove -y curl unzip g++-8 && \
     apt-get autoremove --purge -y && \
     apt-get clean && \
     apt-get autoclean && \
