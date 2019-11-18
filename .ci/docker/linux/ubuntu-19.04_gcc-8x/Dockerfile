@@ -16,11 +16,11 @@
 FROM ubuntu:disco-20191030
 
 SHELL ["/bin/bash", "-c"]
-# ENV variables are avliable when the image (and thus the CodeBuild build) are running
+# ENV variables are available when the image (and thus the CodeBuild build) are running and during image build time
 ENV OPENSSL_1_1_1_INSTALL_DIR=/test-deps/openssl-1.1.1 \
     PYTHON_INSTALL_DIR=/test-deps/python
 
-# ARG varliable are only avliable while building the image
+# ARG variables are only available while building the image
 ARG PYTHON_TEMP=/tmp/python
 ARG OPENSSL_TEMP=/tmp/openssl
 
@@ -33,6 +33,7 @@ RUN set -ex && \
     gcc-8=8.3.0-6ubuntu1 \
     g++-8=8.3.0-6ubuntu1 \
     curl=7.64.0-2ubuntu1.2 \
+    unzip=6.0-22ubuntu1 \
     make=4.2.1-1.2 && \
     mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP
 
@@ -44,6 +45,7 @@ RUN set -ex && \
     /tmp/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR
 
 RUN set -ex && \
+    apt-get remove -y curl unzip g++-8
     apt-get autoremove --purge -y && \
     apt-get clean && \
     apt-get autoclean && \
