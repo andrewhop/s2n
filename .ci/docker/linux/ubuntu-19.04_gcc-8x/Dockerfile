@@ -42,6 +42,7 @@ COPY setup_scripts/install_openssl_1_1_1.sh /tmp/install_openssl_1_1_1.sh
 COPY setup_scripts/install_python.sh /tmp/install_python.sh
 
 RUN set -ex && \
+    export CXX=g++-8 CC=gcc-8 && \
     /tmp/install_openssl_1_1_1.sh $OPENSSL_TEMP $OPENSSL_1_1_1_INSTALL_DIR && \
     /tmp/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR
 
