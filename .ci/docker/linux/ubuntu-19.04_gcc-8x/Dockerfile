@@ -27,11 +27,12 @@ ARG OPENSSL_TEMP=/tmp/openssl
 RUN set -ex && \
     apt-get update
 
-# clang=1:8.0-48~exp1ubuntu1 aka clang 8.0.0 is the latest version of clang if you run `apt-cache policy clang`
+# gcc-8=8.3.0-6ubuntu1 aka gcc 8.3.0 is the latest version of gcc if you run `apt-cache policy gcc`
 RUN set -ex && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     gcc-8=8.3.0-6ubuntu1 \
-    g++-8=8.3.0-6ubuntu1 && \
+    g++-8=8.3.0-6ubuntu1 \
+    curl=7.64.0-2ubuntu1.2 \
     make=4.2.1-1.2 && \
     mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP
 
