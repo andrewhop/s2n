@@ -21,8 +21,8 @@ ENV OPENSSL_1_1_1_INSTALL_DIR=/test-deps/openssl-1.1.1 \
     PYTHON_INSTALL_DIR=/test-deps/python
 
 # ARG varliable are only avliable while building the image
-ARG PYTHON_TEMP=/tmp/python \
-    OPENSSL_TEMP=/tmp/openssl
+ARG PYTHON_TEMP=/tmp/python
+ARG OPENSSL_TEMP=/tmp/openssl
 
 RUN set -ex && \
     apt-get update
