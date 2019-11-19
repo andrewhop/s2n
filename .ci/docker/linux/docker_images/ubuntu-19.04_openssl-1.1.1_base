@@ -20,7 +20,8 @@ SHELL ["/bin/bash", "-c"]
 # ENV variables are available when the image (and thus the CodeBuild build) are running and during image build time
 ENV OPENSSL_1_1_1_INSTALL_DIR=/test-deps/openssl-1.1.1 \
     PYTHON_INSTALL_DIR=/test-deps/python \
-    GNUTLS_INSTALL_DIR=/test-deps/gnutls
+    GNUTLS_INSTALL_DIR=/test-deps/gnutls \
+    CPPCHECK_INSTALL_DIR=/test-deps/cppcheck
 
 
 # ARG variables are only available while building the image
@@ -32,6 +33,7 @@ COPY setup_scripts/install_openssl_1_1_1.sh /tmp/install_openssl_1_1_1.sh
 COPY setup_scripts/install_python.sh /tmp/install_python.sh
 COPY setup_scripts/install_gnutls.sh /tmp/install_gnutls.sh
 COPY setup_scripts/install_sslyze.sh /tmp/install_sslyze.sh
+COPY setup_scripts/install_cppcheck.sh /tmp/install_cppcheck.sh
 
 RUN set -ex && \
     apt-get update
@@ -48,7 +50,9 @@ RUN set -ex && \
     nettle-dev=3.4.1-1 \
     nettle-bin=3.4.1-1 \
     m4=1.4.18-2 \
-    pkg-config=0.29.1-0ubuntu2 && \
+    pkg-config=0.29.1-0ubuntu2 \
+    kwstyle=1.0.1+git3224cf2-1 && \
     mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $OPENSSL_TEMP \
         $PYTHON_INSTALL_DIR $PYTHON_TEMP \
-        $GNUTLS_INSTALL_DIR $GNU_TEMP
+        $GNUTLS_INSTALL_DIR $GNU_TEMP \
+        $CPPCHECK_INSTALL_DIR

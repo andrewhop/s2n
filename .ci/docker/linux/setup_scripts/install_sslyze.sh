@@ -13,10 +13,10 @@
 # permissions and limitations under the License.
 #
 
-set -e
+set -ex
 
-pip3 install --user --upgrade pip setuptools
-pip3 install --user sslyze
+python -m pip install --user --upgrade pip setuptools
+python -m pip install --user sslyze
 
 which sslyze
 sslyze --version

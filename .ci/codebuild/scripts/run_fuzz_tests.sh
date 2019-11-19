@@ -12,8 +12,10 @@
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-.travis/run_cppcheck.sh "$CPPCHECK_INSTALL_DIR"
-.travis/copyright_mistake_scanner.sh
-.travis/grep_simple_mistakes.sh
-.travis/run_kwstyle.sh
-.travis/cpp_style_comment_linter.sh
+prlimit --pid "$$" --memlock=unlimited:unlimited
+NUM_CORES=`nproc --all`
+
+# make defaults to all which will build everything then run the unit tests, -j runs the build with NUM_CORES parallel jobs
+make -j $NUM_CORES
+
+make fuzz
