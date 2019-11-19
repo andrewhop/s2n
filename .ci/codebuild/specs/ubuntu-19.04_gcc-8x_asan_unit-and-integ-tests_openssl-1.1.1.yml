@@ -18,7 +18,8 @@ phases:
     commands:
       - export CC=gcc-8
       - export CXX=g++-8
-      - S2N_ADDRESS_SANITIZER=1z
+      - S2N_ADDRESS_SANITIZER=1
+      - export LIBCRYPTO_ROOT=$OPENSSL_1_1_1_INSTALL_DIR
   build:
     commands:
       - .ci/codebuild/scripts/run_unit_and_integ_tests.sh

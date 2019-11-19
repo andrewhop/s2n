@@ -18,6 +18,7 @@ phases:
     commands:
       - export CC=gcc-8
       - export CXX=g++-8
+      - export LIBCRYPTO_ROOT=$OPENSSL_1_1_1_INSTALL_DIR
   build:
     commands:
       - .ci/codebuild/scripts/run_valgrind.sh
