@@ -27,7 +27,7 @@ ARG GNU_TEMP=/tmp/gnutls
 ARG PYTHON_TEMP=/tmp/python
 
 RUN set -ex && \
-    apt-get update && apt-get -y install  --no-install-recommends \
+    apt-get update && apt-get -y --no-install-recommends install  \
     curl=7.64.0-2ubuntu1.2 \
     git=1:2.20.1-2ubuntu1 \
     kwstyle=1.0.1+git3224cf2-1 \

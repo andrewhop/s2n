@@ -19,7 +19,7 @@ ARG OPENSSL_TEMP=/tmp/openssl
 ARG GNU_TEMP=/tmp/gnutls
 
 RUN set -ex && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    apt-get update && apt-get -y --no-install-recommends install  \
     gcc-9=9.1.0-2ubuntu2~19.04 \
     g++-9=9.1.0-2ubuntu2~19.04
 

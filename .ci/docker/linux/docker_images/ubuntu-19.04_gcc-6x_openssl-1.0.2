@@ -19,7 +19,7 @@ ARG OPENSSL_TEMP=/tmp/openssl
 ARG GNU_TEMP=/tmp/gnutls
 
 RUN set -ex && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    apt-get update && apt-get -y --no-install-recommends install  \
     gcc-6=6.5.0-2ubuntu1 \
     g++-6=6.5.0-2ubuntu1
 
