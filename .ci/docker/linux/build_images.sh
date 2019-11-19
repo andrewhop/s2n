@@ -12,10 +12,10 @@
 # implied. See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+docker build -m6g -t s2n_ubuntu:19.04_base -f docker_images/ubuntu-19.04_base .
 docker build -m6g -t s2n_ubuntu:19.04_openssl-1.1.1 -f docker_images/ubuntu-19.04_openssl-1.1.1_base .
-docker build -m6g -t ubuntu-19.04:gcc-8x_openssl-1.1.1 -f docker_images/ubuntu-19.04_clang-8x_openssl-1.1.1 .
-docker build -m6g -t ubuntu-19.04:clang-8x_openssl-1.1.1 -f docker_images/ubuntu-19.04_gcc-8x_openssl-1.1.1 .
+docker build -m6g -t ubuntu-19.04:gcc-9x_openssl-1.1.1 -f docker_images/ubuntu-19.04_clang-8x_openssl-1.1.1 .
+docker build -m6g -t ubuntu-19.04:clang-9x_openssl-1.1.1 -f docker_images/ubuntu-19.04_gcc-9x_openssl-1.1.1 .
 
 docker build -m6g -t s2n_ubuntu:19.04_openssl-1.0.2 -f docker_images/ubuntu-19.04_openssl-1.0.2_base .
 docker build -m6g -t ubuntu-19.04:gcc-6x_openssl-1.0.2 -f docker_images/ubuntu-19.04_gcc-6x_openssl-1.0.2 .

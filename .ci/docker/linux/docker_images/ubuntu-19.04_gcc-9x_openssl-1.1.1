@@ -21,8 +21,8 @@ ARG GNU_TEMP=/tmp/gnutls
 # gcc-8=8.3.0-6ubuntu1 aka gcc 8.3.0 is the latest version of gcc if you run `apt-cache policy gcc`
 RUN set -ex && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
-    gcc-8=8.3.0-6ubuntu1 \
-    g++-8=8.3.0-6ubuntu1
+    gcc-9=9.1.0-2ubuntu2~19.04 \
+    g++-9=9.1.0-2ubuntu2~19.04
 
 RUN set -ex && \
     export CXX=g++-8 CC=gcc-8 && \
