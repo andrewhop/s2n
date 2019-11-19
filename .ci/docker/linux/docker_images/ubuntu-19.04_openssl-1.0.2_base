@@ -23,5 +23,6 @@ ENV OPENSSL_1_0_2_INSTALL_DIR=/test-deps/openssl-1.0.2
 # ARG variables are only available while building the image
 ARG OPENSSL_TEMP=/tmp/openssl
 
+COPY setup_scripts/install_openssl_1_0_2.sh /tmp/install_openssl_1_0_2.sh
 RUN set -ex && \
-    mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $OPENSSL_TEMP
+    mkdir -p $OPENSSL_1_0_2_INSTALL_DIR $OPENSSL_TEMP

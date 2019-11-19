@@ -52,6 +52,11 @@ RUN set -ex && \
     unzip=6.0-22ubuntu1 \
     zlib1g-dev=1:1.2.11.dfsg-1ubuntu2 \
     zlibc=0.9k-4.3 \
-    && mkdir -p $PYTHON_INSTALL_DIR $PYTHON_TEMP \
+    && \
+    apt-get autoremove --purge -y && \
+    apt-get clean && \
+    apt-get autoclean && \
+    rm -rf /tmp/* && \
+    mkdir -p $PYTHON_INSTALL_DIR $PYTHON_TEMP \
         $GNUTLS_INSTALL_DIR $GNU_TEMP \
-        $CPPCHECK_INSTALL_DIR
+        $CPPCHECK_INSTALL_DIR && \

@@ -29,9 +29,7 @@ RUN set -ex && \
     /tmp/install_python.sh $OPENSSL_1_0_2_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR && \
     /tmp/install_gnutls.sh $GNU_TEMP $GNUTLS_INSTALL_DIR && \
     /tmp/install_cppcheck.sh $CPPCHECK_INSTALL_DIR && \
-    /tmp/install_sslyze.sh
-
-RUN set -ex && \
+    /tmp/install_sslyze.sh && \
     apt-get autoremove --purge -y && \
     apt-get clean && \
     apt-get autoclean && \
