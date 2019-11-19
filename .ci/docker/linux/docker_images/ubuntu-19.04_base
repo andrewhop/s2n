@@ -47,4 +47,6 @@ RUN set -ex && \
     python3-pip=18.1-5 \
     nettle-dev=3.4.1-1 \
     nettle-bin=3.4.1-1 && \
-    mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP
+    mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $OPENSSL_TEMP \
+        $PYTHON_INSTALL_DIR $PYTHON_TEMP \
+        $GNUTLS_INSTALL_DIR $GNU_TEMP

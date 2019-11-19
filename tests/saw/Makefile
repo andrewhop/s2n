@@ -20,7 +20,7 @@
 
 #The scripts are all of the saw files in this directory
 SCRIPTS = $(wildcard *.saw)
-#A log file will be created for each test in the temp dir
+#A log file will be created for each test in the docker_images dir
 LOGS=$(patsubst %.saw,tmp/%.log,$(SCRIPTS))
 SHELL:=/bin/bash
 YICES_VERSION=$(shell yices-smt2 --version)
@@ -74,7 +74,7 @@ clean_the_dir :
 ## Script Tests
 ###########################################
 
-# To make a log we need the corresponding saw file, the all_llvm file, and a temp directory
+# To make a log we need the corresponding saw file, the all_llvm file, and a docker_images directory
 # The pipefail command causes the entire command to fail if saw fails, even though we pipe it to tee
 # without it we would see only the tee return code
 tmp/%.log : %.saw bitcode/all_llvm.bc tmp
