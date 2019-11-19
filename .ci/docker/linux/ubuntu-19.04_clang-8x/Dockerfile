@@ -10,39 +10,20 @@
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 # implied. See the License for the specific language governing permissions and
 # limitations under the License.
-
-# Disco is the code name for the 19.04 release. The official 19.04 tag appears to act like a latest which we don't want.
-# Disco gets specific versions and disco-20191030 is the latest. https://hub.docker.com/_/ubuntu/
-FROM ubuntu:disco-20191030
+FROM s2n_ubuntu:19.04
 
 SHELL ["/bin/bash", "-c"]
-
-# ENV variables are available when the image (and thus the CodeBuild build) are running and during image build time
-ENV OPENSSL_1_1_1_INSTALL_DIR=/test-deps/openssl-1.1.1 \
-    PYTHON_INSTALL_DIR=/test-deps/python
-
-# ARG variables are only available while building the image
-ARG PYTHON_TEMP=/tmp/python
-ARG OPENSSL_TEMP=/tmp/openssl
-
-RUN set -ex && \
-    apt-get update
 
 # gcc-8=8.3.0-1ubuntu3 aka gcc 8.3.0 is the latest version of gcc if you run `apt-cache policy gcc`
 RUN set -ex && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     clang=1:8.0-48~exp1ubuntu1 && \
-    mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP
-
-COPY setup_scripts/install_common_ubuntu-19.04_dependencies.sh /tmp/install_common_ubuntu-19.04_dependencies.sh
-COPY setup_scripts/install_openssl_1_1_1.sh /tmp/install_openssl_1_1_1.sh
-COPY setup_scripts/install_python.sh /tmp/install_python.sh
 
 RUN set -ex && \
     export CXX=clang++-8 CC=clang-8 && \
-    /tmp/install_common_ubuntu-19.04_dependencies.sh && \
     /tmp/install_openssl_1_1_1.sh $OPENSSL_TEMP $OPENSSL_1_1_1_INSTALL_DIR && \
-    /tmp/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR
+    /tmp/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR && \
+    /tmp/install_gnutls.sh $GNU_TEMP $GNUTLS_INSTALL_DIR
 
 RUN set -ex && \
     apt-get remove -y curl unzip g++-8 perl && \
