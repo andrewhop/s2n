@@ -26,16 +26,8 @@ ENV CPPCHECK_INSTALL_DIR=/test-deps/cppcheck \
 ARG GNU_TEMP=/tmp/gnutls
 ARG PYTHON_TEMP=/tmp/python
 
-COPY setup_scripts/install_cppcheck.sh /tmp/install_cppcheck.sh
-COPY setup_scripts/install_gnutls.sh /tmp/install_gnutls.sh
-COPY setup_scripts/install_python.sh /tmp/install_python.sh
-COPY setup_scripts/install_sslyze.sh /tmp/install_sslyze.sh
-
 RUN set -ex && \
-    apt-get update
-
-RUN set -ex && \
-    DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    apt-get update && apt-get -y install \
     curl=7.64.0-2ubuntu1.2 \
     git=1:2.20.1-2ubuntu1 \
     kwstyle=1.0.1+git3224cf2-1 \
@@ -60,3 +52,8 @@ RUN set -ex && \
     mkdir -p $PYTHON_INSTALL_DIR $PYTHON_TEMP \
         $GNUTLS_INSTALL_DIR $GNU_TEMP \
         $CPPCHECK_INSTALL_DIR
+
+COPY setup_scripts/install_cppcheck.sh /tmp/install_cppcheck.sh
+COPY setup_scripts/install_gnutls.sh /tmp/install_gnutls.sh
+COPY setup_scripts/install_python.sh /tmp/install_python.sh
+COPY setup_scripts/install_sslyze.sh /tmp/install_sslyze.sh
