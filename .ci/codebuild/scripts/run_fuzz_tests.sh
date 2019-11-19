@@ -12,5 +12,5 @@
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-prlimit --pid "$$" --memlock=unlimited:unlimited
+sudo prlimit --pid "$$" --memlock=unlimited:unlimited
 make fuzz

@@ -12,7 +12,7 @@
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-prlimit --pid "$$" --memlock=unlimited:unlimited
+sudo prlimit --pid "$$" --memlock=unlimited:unlimited
 NUM_CORES=`nproc --all`
 
 S2N_DEBUG=true make -j $NUM_CORES valgrind
