@@ -33,7 +33,6 @@ RUN set -ex && \
     /tmp/install_sslyze.sh
 
 RUN set -ex && \
-    apt-get remove -y curl unzip g++-8 perl && \
     apt-get autoremove --purge -y && \
     apt-get clean && \
     apt-get autoclean && \
