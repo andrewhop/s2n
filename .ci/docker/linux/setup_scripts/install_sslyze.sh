@@ -18,5 +18,7 @@ set -ex
 python3 -m pip install --user --upgrade pip setuptools
 python3 -m pip install --user sslyze
 
+ln -s /root/.local/bin/sslyze /usr/bin/sslyze
+
 which sslyze
 sslyze --version
