@@ -18,4 +18,4 @@ docker build -m6g -t ubuntu-19.04:gcc-8x_openssl-1.1.1 -f docker_images/ubuntu-1
 docker build -m6g -t ubuntu-19.04:clang-8x_openssl-1.1.1 -f docker_images/ubuntu-19.04_gcc-8x_openssl-1.1.1 .
 
 docker build -m6g -t s2n_ubuntu:19.04_openssl-1.0.2 -f docker_images/ubuntu-19.04_openssl-1.0.2_base .
-docker build -m6g -t ubuntu-19.04:gcc-6x_openssl-1.0.2 -f docker_images/ubuntu-19.04_clang-6x_openssl-1.0.2 .
+docker build -m6g -t ubuntu-19.04:gcc-6x_openssl-1.0.2 -f docker_images/ubuntu-19.04_gcc-6x_openssl-1.0.2 .
