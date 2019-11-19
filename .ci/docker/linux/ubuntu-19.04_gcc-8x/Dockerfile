@@ -16,6 +16,7 @@
 FROM ubuntu:disco-20191030
 
 SHELL ["/bin/bash", "-c"]
+
 # ENV variables are available when the image (and thus the CodeBuild build) are running and during image build time
 ENV OPENSSL_1_1_1_INSTALL_DIR=/test-deps/openssl-1.1.1 \
     PYTHON_INSTALL_DIR=/test-deps/python
@@ -31,19 +32,16 @@ RUN set -ex && \
 RUN set -ex && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
     gcc-8=8.3.0-6ubuntu1 \
-    g++-8=8.3.0-6ubuntu1 \
-    curl=7.64.0-2ubuntu1.2 \
-    unzip=6.0-22ubuntu1 \
-    perl=5.28.1-6 \
-    zlibc=0.9k-4.3 \
-    make=4.2.1-1.2 && \
+    g++-8=8.3.0-6ubuntu1 && \
     mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP
 
+COPY setup_scripts/install_common_ubuntu-19.04_dependencies.sh /tmp/install_common_ubuntu-19.04_dependencies.sh
 COPY setup_scripts/install_openssl_1_1_1.sh /tmp/install_openssl_1_1_1.sh
 COPY setup_scripts/install_python.sh /tmp/install_python.sh
 
 RUN set -ex && \
-    export CXX=g++-8 CC=gcc-8 && \
+    export CXX=clang++-8 CC=clang-8 && \
+    /tmp/install_common_ubuntu-19.04_dependencies.sh && \
     /tmp/install_openssl_1_1_1.sh $OPENSSL_TEMP $OPENSSL_1_1_1_INSTALL_DIR && \
     /tmp/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR
 
