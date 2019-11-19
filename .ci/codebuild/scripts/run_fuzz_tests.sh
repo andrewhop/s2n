@@ -13,9 +13,4 @@
 # permissions and limitations under the License.
 
 prlimit --pid "$$" --memlock=unlimited:unlimited
-NUM_CORES=`nproc --all`
-
-# make defaults to all which will build everything then run the unit tests, -j runs the build with NUM_CORES parallel jobs
-make -j $NUM_CORES
-
 make fuzz
