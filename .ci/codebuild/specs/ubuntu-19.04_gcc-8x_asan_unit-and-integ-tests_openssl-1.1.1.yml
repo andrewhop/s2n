@@ -21,4 +21,4 @@ phases:
       - S2N_ADDRESS_SANITIZER=1z
   build:
     commands:
-      - .ci/codebuild/run_unit_and_integ_tests.sh
+      - .ci/codebuild/scripts/run_unit_and_integ_tests.sh

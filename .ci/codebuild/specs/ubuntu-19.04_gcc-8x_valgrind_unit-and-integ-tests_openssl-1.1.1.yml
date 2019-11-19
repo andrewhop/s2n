@@ -20,4 +20,4 @@ phases:
       - export CXX=g++-8
   build:
     commands:
-      - .ci/codebuild/run_valgrind.sh
+      - .ci/codebuild/scripts/run_valgrind.sh

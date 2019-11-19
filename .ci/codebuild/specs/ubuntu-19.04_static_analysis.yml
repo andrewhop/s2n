@@ -16,4 +16,4 @@ version: 0.2
 phases:
   build:
     commands:
-      - .ci/codebuild/run_static_analysis.sh
+      - .ci/codebuild/scripts/run_static_analysis.sh

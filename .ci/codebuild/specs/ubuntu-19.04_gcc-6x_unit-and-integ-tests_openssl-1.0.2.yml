@@ -16,8 +16,9 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - export CC=clang-8
-      - export CXX=clang++-8
+      - export CC=gcc-6
+      - export CXX=g++-6
+      - export GCC_VERSION=6
   build:
     commands:
-      - .ci/codebuild/scripts/run_fuzz_tests.sh
+      - .ci/codebuild/scripts/run_unit_and_integ_tests.sh

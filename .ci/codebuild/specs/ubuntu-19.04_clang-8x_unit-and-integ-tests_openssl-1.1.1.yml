@@ -20,4 +20,4 @@ phases:
       - export CXX=clang++-8
   build:
     commands:
-      - .ci/codebuild/run_unit_and_integ_tests.sh
+      - .ci/codebuild/scripts/run_unit_and_integ_tests.sh
