@@ -59,4 +59,4 @@ RUN set -ex && \
     rm -rf /tmp/* && \
     mkdir -p $PYTHON_INSTALL_DIR $PYTHON_TEMP \
         $GNUTLS_INSTALL_DIR $GNU_TEMP \
-        $CPPCHECK_INSTALL_DIR && \
+        $CPPCHECK_INSTALL_DIR
