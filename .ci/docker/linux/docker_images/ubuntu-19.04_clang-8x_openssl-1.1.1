@@ -10,14 +10,14 @@
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 # implied. See the License for the specific language governing permissions and
 # limitations under the License.
-FROM s2n_ubuntu:19.04
+FROM s2n_ubuntu:19.04_openssl-1.1.1
 
 SHELL ["/bin/bash", "-c"]
 
 # gcc-8=8.3.0-1ubuntu3 aka gcc 8.3.0 is the latest version of gcc if you run `apt-cache policy gcc`
 RUN set -ex && \
     DEBIAN_FRONTEND=noninteractive apt-get -y install \
-    clang=1:8.0-48~exp1ubuntu1 && \
+    clang=1:8.0-48~exp1ubuntu1
 
 RUN set -ex && \
     export CXX=clang++-8 CC=clang-8 && \
