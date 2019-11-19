@@ -28,7 +28,6 @@ ARG PYTHON_TEMP=/tmp/python
 ARG OPENSSL_TEMP=/tmp/openssl
 ARG GNU_TEMP=/tmp/gnutls
 
-COPY setup_scripts/install_common_ubuntu-19.04_dependencies.sh /tmp/install_common_ubuntu-19.04_dependencies.sh
 COPY setup_scripts/install_openssl_1_1_1.sh /tmp/install_openssl_1_1_1.sh
 COPY setup_scripts/install_python.sh /tmp/install_python.sh
 COPY setup_scripts/install_gnutls.sh /tmp/install_gnutls.sh
@@ -38,7 +37,14 @@ RUN set -ex && \
     apt-get update
 
 RUN set -ex && \
-    mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP && \
-    /tmp/install_common_ubuntu-19.04_dependencies.sh && \
-    /tmp/install_sslyze.sh
-
+    DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    curl=7.64.0-2ubuntu1.2 \
+    unzip=6.0-22ubuntu1 \
+    perl=5.28.1-6 \
+    zlibc=0.9k-4.3 \
+    make=4.2.1-1.2 \
+    zlib1g-dev=1:1.2.11.dfsg-1ubuntu2 \
+    python3-pip=18.1-5 \
+    nettle-dev=3.4.1-1 \
+    nettle-bin=3.4.1-1 && \
+    mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP

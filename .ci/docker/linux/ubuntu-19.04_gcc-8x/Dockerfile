@@ -24,7 +24,8 @@ RUN set -ex && \
     export CXX=clang++-8 CC=clang-8 && \
     /tmp/install_openssl_1_1_1.sh $OPENSSL_TEMP $OPENSSL_1_1_1_INSTALL_DIR && \
     /tmp/install_python.sh $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_TEMP $PYTHON_INSTALL_DIR && \
-    /tmp/install_gnutls.sh $GNU_TEMP $GNUTLS_INSTALL_DIR
+    /tmp/install_gnutls.sh $GNU_TEMP $GNUTLS_INSTALL_DIR && \
+    /tmp/install_sslyze.sh
 
 RUN set -ex && \
     apt-get remove -y curl unzip g++-8 perl && \
