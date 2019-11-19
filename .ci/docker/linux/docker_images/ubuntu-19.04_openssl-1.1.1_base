@@ -46,7 +46,8 @@ RUN set -ex && \
     zlib1g-dev=1:1.2.11.dfsg-1ubuntu2 \
     python3-pip=18.1-5 \
     nettle-dev=3.4.1-1 \
-    nettle-bin=3.4.1-1 && \
+    nettle-bin=3.4.1-1 \
+    m4=1.4.18-2 && \
     mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $OPENSSL_TEMP \
         $PYTHON_INSTALL_DIR $PYTHON_TEMP \
         $GNUTLS_INSTALL_DIR $GNU_TEMP

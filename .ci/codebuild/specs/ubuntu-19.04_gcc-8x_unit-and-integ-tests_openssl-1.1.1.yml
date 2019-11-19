@@ -18,6 +18,7 @@ phases:
     commands:
       - export CC=gcc-8
       - export CXX=g++-8
+      - export GCC_VERSION=8
   build:
     commands:
       - .ci/codebuild/run_unit_and_integ_tests.sh
