@@ -16,11 +16,11 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - export CC=gcc-8
-      - export CXX=g++-8
-      - export GCC_VERSION=8
-      - export S2N_CORKED_IO=true
+      - export CC=gcc-9
+      - export CXX=g++-9
+      - export GCC_VERSION=9
       - export LIBCRYPTO_ROOT=$OPENSSL_1_1_1_INSTALL_DIR
+      - S2N_ADDRESS_SANITIZER=1
   build:
     commands:
       - .ci/codebuild/scripts/run_unit_and_integ_tests.sh

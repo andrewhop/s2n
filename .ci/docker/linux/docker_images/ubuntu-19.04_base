@@ -27,7 +27,7 @@ ARG GNU_TEMP=/tmp/gnutls
 ARG PYTHON_TEMP=/tmp/python
 
 RUN set -ex && \
-    apt-get update && apt-get -y install \
+    apt-get update && apt-get -y install  --no-install-recommends \
     curl=7.64.0-2ubuntu1.2 \
     git=1:2.20.1-2ubuntu1 \
     kwstyle=1.0.1+git3224cf2-1 \
@@ -48,6 +48,7 @@ RUN set -ex && \
     apt-get autoremove --purge -y && \
     apt-get clean && \
     apt-get autoclean && \
+    rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/* && \
     mkdir -p $PYTHON_INSTALL_DIR $PYTHON_TEMP \
         $GNUTLS_INSTALL_DIR $GNU_TEMP \

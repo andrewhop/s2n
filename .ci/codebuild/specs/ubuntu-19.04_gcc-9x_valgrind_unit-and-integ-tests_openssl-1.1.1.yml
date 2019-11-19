@@ -16,10 +16,10 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - export CC=gcc-8
-      - export CXX=g++-8
-      - export GCC_VERSION=8
+      - export CC=gcc-9
+      - export CXX=g++-9
+      - export GCC_VERSION=9
       - export LIBCRYPTO_ROOT=$OPENSSL_1_1_1_INSTALL_DIR
   build:
     commands:
-      - .ci/codebuild/scripts/run_unit_and_integ_tests.sh
+      - .ci/codebuild/scripts/run_valgrind.sh
