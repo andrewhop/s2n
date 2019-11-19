@@ -35,6 +35,7 @@ RUN set -ex && \
     curl=7.64.0-2ubuntu1.2 \
     unzip=6.0-22ubuntu1 \
     perl=5.28.1-6 \
+    zlibc=0.9k-4.3 \
     make=4.2.1-1.2 && \
     mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP
 
