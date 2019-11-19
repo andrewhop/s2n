@@ -10,6 +10,9 @@
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 # implied. See the License for the specific language governing permissions and
 # limitations under the License.
+
+# Disco is the code name for the 19.04 release. The official 19.04 tag appears to act like a latest which we don't want.
+# Disco gets specific versions and disco-20191030 is the latest. https://hub.docker.com/_/ubuntu/
 FROM ubuntu:disco-20191030
 
 SHELL ["/bin/bash", "-c"]
@@ -35,7 +38,7 @@ RUN set -ex && \
     apt-get update
 
 RUN set -ex && \
-    mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP
+    mkdir -p $OPENSSL_1_1_1_INSTALL_DIR $PYTHON_INSTALL_DIR $PYTHON_TEMP $OPENSSL_TEMP && \
     /tmp/install_common_ubuntu-19.04_dependencies.sh && \
     /tmp/install_sslyze.sh
 
