@@ -15,8 +15,8 @@
 
 set -ex
 
-python -m pip3 install --user --upgrade pip setuptools
-python -m pip3 install --user sslyze
+python3 -m pip install --user --upgrade pip setuptools
+python3 -m pip install --user sslyze
 
 which sslyze
 sslyze --version
