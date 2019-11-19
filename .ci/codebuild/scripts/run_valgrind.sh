@@ -1,5 +1,5 @@
-#!/bin/bash
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#!/bin/bash -ex
+# Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License").
 # You may not use this file except in compliance with the License.
@@ -11,12 +11,8 @@
 # on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
-#
 
-set -ex
+prlimit --pid "$$" --memlock=unlimited:unlimited
+NUM_CORES=`nproc --all`
 
-python -m pip3 install --user --upgrade pip setuptools
-python -m pip3 install --user sslyze
-
-which sslyze
-sslyze --version
+S2N_DEBUG=true make -j $NUM_CORES valgrind
