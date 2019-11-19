@@ -22,8 +22,8 @@ echo "Uploading docker images to ${ECS_REPO}."
 
 $(aws ecr get-login --no-include-email --region us-west-2)
 
-docker tag ubuntu-19.04:gcc-8x_openssl-1.1.1 ${ECS_REPO}:ubuntu-19.04_gcc-8x_openssl-1.1.1_`date +%Y-%m-%d`
-docker push ${ECS_REPO}:ubuntu-19.04_gcc-8x_openssl-1.1.1_`date +%Y-%m-%d`
+docker tag ubuntu-19.04:gcc-9x_openssl-1.1.1 ${ECS_REPO}:ubuntu-19.04_gcc-9x_openssl-1.1.1_`date +%Y-%m-%d`
+docker push ${ECS_REPO}:ubuntu-19.04_gcc-9x_openssl-1.1.1_`date +%Y-%m-%d`
 
 docker tag ubuntu-19.04:clang-8x_openssl-1.1.1 ${ECS_REPO}:ubuntu-19.04_clang-8x_openssl-1.1.1_`date +%Y-%m-%d`
 docker push ${ECS_REPO}:ubuntu-19.04_clang-8x_openssl-1.1.1_`date +%Y-%m-%d`
