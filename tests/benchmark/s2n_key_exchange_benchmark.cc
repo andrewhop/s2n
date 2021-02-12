@@ -110,13 +110,6 @@ static int run_kex(const struct s2n_kex *kex_to_test, const struct s2n_ecc_named
     return 0;
 }
 
-//int main(int argc, char **argv) {
-//    GUARD(s2n_init());
-//    GUARD(run_kex(&s2n_dhe, &s2n_ecc_curve_secp256r1, NULL));
-//    printf("succes\n");
-//    return 0;
-//}
-//
 static void BM_ecdhe_256_null(benchmark::State& state) {
     for (auto _ : state) {
         if(0 != run_kex(&s2n_ecdhe, &s2n_ecc_curve_secp256r1, NULL, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384)) {
@@ -128,6 +121,22 @@ static void BM_ecdhe_256_null(benchmark::State& state) {
 static void BM_ecdhe_384_null(benchmark::State& state) {
     for (auto _ : state) {
         if(0 != run_kex(&s2n_ecdhe, &s2n_ecc_curve_secp384r1, NULL, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384)) {
+            state.SkipWithError("Failed to run kex");
+        }
+    }
+}
+
+static void BM_ecdhe_521_null(benchmark::State& state) {
+    for (auto _ : state) {
+        if(0 != run_kex(&s2n_ecdhe, &s2n_ecc_curve_secp521r1, NULL, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384)) {
+            state.SkipWithError("Failed to run kex");
+        }
+    }
+}
+
+static void BM_ecdhe_x25519_null(benchmark::State& state) {
+    for (auto _ : state) {
+        if(0 != run_kex(&s2n_ecdhe, &s2n_ecc_curve_x25519, NULL, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384)) {
             state.SkipWithError("Failed to run kex");
         }
     }
@@ -174,6 +183,8 @@ static void BM_ecdhe_256_kyber_512_r2(benchmark::State& state) {
 
 BENCHMARK(BM_ecdhe_256_null);
 BENCHMARK(BM_ecdhe_384_null);
+BENCHMARK(BM_ecdhe_521_null);
+BENCHMARK(BM_ecdhe_x25519_null);
 BENCHMARK(BM_ecdhe_256_kyber_512_r2);
 BENCHMARK(BM_ecdhe_256_bike_l1_r1);
 BENCHMARK(BM_ecdhe_256_bike_l1_r2);
@@ -181,14 +192,21 @@ BENCHMARK(BM_ecdhe_256_sike_p503_r1);
 BENCHMARK(BM_ecdhe_256_sike_p434_r2);
 
 int main(int argc, char** argv) {
+#if defined(OPENSSL_IS_BORINGSSL)
+    printf("Build with BoringSSL at 0x%x\n", OPENSSL_VERSION_NUMBER);
+#elif defined(OPENSSL_IS_AWSLC)
+    printf("Build with AWS-LC at 0x%x\n", OPENSSL_VERSION_NUMBER);
+#else
+    printf("Build with OpenSSL at 0x%lx\n", OPENSSL_VERSION_NUMBER);
+#endif
     ::benchmark::Initialize(&argc, argv);
+    GUARD(s2n_init());
 
-    int rc = s2n_init();
-    assert(rc == 0);
 
-    if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
+    if (::benchmark::ReportUnrecognizedArguments(argc, argv)){
+        return 1;
+    }
     ::benchmark::RunSpecifiedBenchmarks();
 
-    rc = s2n_cleanup();
-    assert(rc == 0);
+    GUARD(s2n_cleanup());
 }
