@@ -314,6 +314,7 @@ if (BUILD_TESTING)
             string(REGEX REPLACE ".+\\/(.+)\\.cc" "\\1" benchmark_name ${benchmark})
             add_executable(${benchmark_name} ${benchmark})
             target_include_directories(${benchmark_name} PRIVATE api)
+            target_include_directories(${benchmark_name} PRIVATE ./)
             target_include_directories(${benchmark_name} PRIVATE tests)
             target_link_libraries(${benchmark_name} PUBLIC ${PROJECT_NAME} testss2n benchmark::benchmark)
 
