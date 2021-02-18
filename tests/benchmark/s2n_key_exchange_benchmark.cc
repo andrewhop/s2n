@@ -61,14 +61,14 @@ static int run_kex(const struct s2n_kex *kex_to_test, const struct s2n_ecc_named
 //    struct s2n_blob b = {0};
 //    struct s2n_config *config = NULL;
 //    GUARD_NONNULL(config = s2n_config_new());
-//    char *dhparams_pem = NULL;
-//    GUARD_NONNULL(dhparams_pem = static_cast<char *>(malloc(S2N_MAX_TEST_PEM_SIZE)));
-//    GUARD(s2n_read_test_pem(S2N_DEFAULT_TEST_DHPARAMS, dhparams_pem, S2N_MAX_TEST_PEM_SIZE));
+//    char *server_dhparams_pem = NULL;
+//    GUARD_NONNULL(server_dhparams_pem = static_cast<char *>(malloc(S2N_MAX_TEST_PEM_SIZE)));
+//    GUARD(s2n_read_test_pem(S2N_DEFAULT_TEST_DHPARAMS, server_dhparams_pem, S2N_MAX_TEST_PEM_SIZE));
 //
 //    GUARD(s2n_blob_init(&b, static_cast<uint8_t *>(s2n_stuffer_raw_read(&dhparams_out, available_size)), available_size));
 //    GUARD(s2n_pkcs3_to_dh_params(&dh_params, &b));
 //
-//    GUARD(s2n_config_add_dhparams(config, dhparams_pem));
+//    GUARD(s2n_config_add_dhparams(config, server_dhparams_pem));
 
     /* Part 1: Server calls send_key */
     struct s2n_blob data_to_sign = {0};
