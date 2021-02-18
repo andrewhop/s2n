@@ -31,6 +31,7 @@ extern "C" {
 
 /* Based on supported ciphers and s2n_crypto_constants.h */
 #define MAX_KEY_SIZE 64
+#define MAX_MAC_KEY_SIZE 64
 #define MAX_TAG 64
 #define MAX_AAD 32
 #define MAX_IV 32
@@ -44,33 +45,29 @@ struct cipher_name {
 
 
 static const struct cipher_name ciphers[] = {
-//    {&s2n_rc4, "s2n_rc4"},
-//    {&s2n_aes128, "s2n_aes128"},
-//    {&s2n_aes256, "s2n_aes256"},
-//    {&s2n_3des, "s2n_3des"},
-//    {&s2n_aes128_gcm, "s2n_aes128_gcm"},
-//    {&s2n_aes256_gcm, "s2n_aes256_gcm"},
+    {&s2n_rc4, "s2n_rc4"},
+    {&s2n_aes128, "s2n_aes128"},
+    {&s2n_aes256, "s2n_aes256"},
+    {&s2n_3des, "s2n_3des"},
+    {&s2n_aes128_gcm, "s2n_aes128_gcm"},
+    {&s2n_aes256_gcm, "s2n_aes256_gcm"},
     {&s2n_aes128_sha, "s2n_aes128_sha"},
-//    {&s2n_aes256_sha, "s2n_aes256_sha"},
-//    {&s2n_aes128_sha256, "s2n_aes128_sha256"},
-//    {&s2n_aes256_sha256, "s2n_aes256_sha256"},
-//    {&s2n_chacha20_poly1305, "s2n_chacha20_poly1305"},
-//    {&s2n_tls13_aes128_gcm, "s2n_tls13_aes128_gcm"},
-//    {&s2n_tls13_aes256_gcm, "s2n_tls13_aes256_gcm"},
+    {&s2n_aes256_sha, "s2n_aes256_sha"},
+    {&s2n_aes128_sha256, "s2n_aes128_sha256"},
+    {&s2n_aes256_sha256, "s2n_aes256_sha256"},
+    {&s2n_chacha20_poly1305, "s2n_chacha20_poly1305"},
+    {&s2n_tls13_aes128_gcm, "s2n_tls13_aes128_gcm"},
+    {&s2n_tls13_aes256_gcm, "s2n_tls13_aes256_gcm"},
 };
 static const int message_sizes[] = {
-    62, 256, S2N_SMALL_RECORD_LENGTH, S2N_DEFAULT_RECORD_LENGTH
+    62, 64, 256, S2N_SMALL_RECORD_LENGTH, S2N_DEFAULT_RECORD_LENGTH
 };
 
 int run_cipher(s2n_cipher *cipher, int message_size) {
     if (cipher->type == s2n_cipher::S2N_CBC){
         message_size -= message_size % cipher->io.cbc.block_size;
-    } else if (cipher->type == s2n_cipher::S2N_COMPOSITE) {
+    } else if (cipher->type == s2n_cipher::S2N_COMPOSITE){
         message_size -= message_size % cipher->io.comp.block_size;
-        /* Composite digest length */
-        message_size -= cipher->io.comp.mac_key_size;
-        /* Padding length byte */
-        message_size -= 1;
     }
 
     s2n_stack_blob(key, cipher->key_material_size, MAX_KEY_SIZE);
@@ -85,6 +82,11 @@ int run_cipher(s2n_cipher *cipher, int message_size) {
 
     GUARD(cipher->init(&encryption_session_key));
     GUARD(cipher->set_encryption_key(&encryption_session_key, &key));
+    if (cipher->type == s2n_cipher::S2N_COMPOSITE) {
+        uint8_t mac_size = cipher->io.comp.mac_key_size;
+        s2n_stack_blob(mac_key, mac_size, MAX_MAC_KEY_SIZE);
+        cipher->io.comp.set_mac_write_key(&encryption_session_key, mac_key.data, mac_key.size);
+    }
     switch (cipher->type) {
         case s2n_cipher::S2N_STREAM:
             GUARD(cipher->io.stream.encrypt(&encryption_session_key, &plaintext_message, &ciphertext));
