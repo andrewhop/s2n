@@ -180,15 +180,14 @@ auto BM_test = [](benchmark::State& state, struct test_case test) {
 
 int main(int argc, char** argv) {
 #if defined(OPENSSL_IS_BORINGSSL)
-    printf("Build with BoringSSL at 0x%x\n", OPENSSL_VERSION_NUMBER);
+    printf("Built with BoringSSL at 0x%x\n", OPENSSL_VERSION_NUMBER);
 #elif defined(OPENSSL_IS_AWSLC)
-    printf("Build with AWS-LC at 0x%x\n", OPENSSL_VERSION_NUMBER);
+    printf("Built with AWS-LC at 0x%x\n", OPENSSL_VERSION_NUMBER);
 #else
-    printf("Build with OpenSSL at 0x%lx\n", OPENSSL_VERSION_NUMBER);
+    printf("Built with OpenSSL at 0x%lx\n", OPENSSL_VERSION_NUMBER);
 #endif
 
-    for (size_t i = 0; i < s2n_array_len(tests); i++) {
-        struct test_case test = tests[i];
+    for (struct test_case test : tests) {
         std::string cipher_name = test.cipher_suite_to_test == nullptr ? "null" : test.cipher_suite_to_test->name;
         std::string curve_name = test.curve_to_test == nullptr ? "null" : test.curve_to_test->name;
         std::string kem_name = test.kem_to_test == nullptr ? "null" : test.kem_to_test->name;
@@ -198,7 +197,6 @@ int main(int argc, char** argv) {
     ::benchmark::Initialize(&argc, argv);
 
     GUARD(s2n_init());
-    GUARD(one_time_setup());
     GUARD(one_time_setup());
 
     if (::benchmark::ReportUnrecognizedArguments(argc, argv)){
