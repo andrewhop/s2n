@@ -321,8 +321,7 @@ if (BUILD_TESTING)
             # Based off the flags in tests/benchmark/Makefile
             target_compile_options(${benchmark_name} PRIVATE -pedantic -Wall -Werror -Wunused -Wcomment -Wchar-subscripts
                     -Wuninitialized -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings -Wno-deprecated-declarations
-                    -Wno-unknown-pragmas -Wformat-security -Wno-missing-braces -fvisibility=hidden -Wno-unreachable-code
-                    -Wno-unused-but-set-variable)
+                    -Wno-unknown-pragmas -Wformat-security -Wno-missing-braces -fvisibility=hidden -Wno-unreachable-code)
         endforeach(benchmark)
 
     endif()
