@@ -24,19 +24,6 @@ extern "C" {
 #include "testlib/s2n_testlib.h"
 }
 
-/* These KEX's do not need a KEM configured */
-static const struct s2n_kex simple_kex[] = {
-    s2n_rsa,
-    s2n_dhe,
-    s2n_ecdhe,
-};
-
-/* These KEX's need a KEM to be configured to succed */
-static const struct s2n_kex kem_kex[] = {
-    s2n_kem,
-    s2n_hybrid_ecdhe_kem,
-};
-
 static int run_kex(const struct s2n_kex *kex_to_test, const struct s2n_ecc_named_curve *curve_to_test,
                    const struct s2n_kem *kem_to_test, struct s2n_cipher_suite *cipher_suite_to_test) {
     struct s2n_connection *client_conn;
