@@ -93,7 +93,6 @@ int run_cipher(s2n_cipher *cipher, int message_size) {
             break;
         case s2n_cipher::S2N_CBC:
             GUARD(s2n_blob_init(&iv, iv_storage, cipher->io.cbc.record_iv_size));
-            GUARD(s2n_blob_init(&ciphertext, ciphertext_buf, plaintext_message.size));
             GUARD(cipher->io.cbc.encrypt(&encryption_session_key, &iv, &plaintext_message, &ciphertext));
             break;
         case s2n_cipher::S2N_AEAD:
@@ -109,16 +108,17 @@ int run_cipher(s2n_cipher *cipher, int message_size) {
             S2N_ERROR(S2N_ERR_CIPHER_TYPE);
     }
 
+    GUARD(s2n_session_key_free(&encryption_session_key));
     return 0;
 }
 
 auto BM_test = [](benchmark::State& state, s2n_cipher *cipher, int message_size) {
     if(!cipher->is_available()) {
-        state.SkipWithError("Cipher not avaliable");
+        state.SkipWithError("Cipher not available");
     }
-  for (auto _ : state) {
-      BENCHMARK_SUCCESS(run_cipher(cipher, message_size));
-  }
+    for (auto _ : state) {
+        BENCHMARK_SUCCESS(run_cipher(cipher, message_size));
+    }
 };
 
 int main(int argc, char** argv) {
