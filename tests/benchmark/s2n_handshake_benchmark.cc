@@ -35,15 +35,15 @@ struct test_case {
 };
 
 static const struct test_case tests[] = {
-    {nullptr, nullptr, &s2n_dhe_rsa_with_aes_256_gcm_sha384},
-    {&s2n_ecc_curve_secp256r1, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
-    {&s2n_ecc_curve_secp384r1, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
-    {&s2n_ecc_curve_secp521r1, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
-    {&s2n_ecc_curve_x25519, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
-    {&s2n_ecc_curve_secp256r1, &s2n_sike_p503_r1, &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384},
-    {&s2n_ecc_curve_secp256r1, &s2n_sike_p434_r2, &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384},
-    {&s2n_ecc_curve_secp256r1, &s2n_bike1_l1_r1, &s2n_ecdhe_bike_rsa_with_aes_256_gcm_sha384},
-    {&s2n_ecc_curve_secp256r1, &s2n_bike1_l1_r2, &s2n_ecdhe_bike_rsa_with_aes_256_gcm_sha384},
+//    {nullptr, nullptr, &s2n_dhe_rsa_with_aes_256_gcm_sha384},
+//    {&s2n_ecc_curve_secp256r1, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
+//    {&s2n_ecc_curve_secp384r1, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
+//    {&s2n_ecc_curve_secp521r1, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
+//    {&s2n_ecc_curve_x25519, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
+//    {&s2n_ecc_curve_secp256r1, &s2n_sike_p503_r1, &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384},
+//    {&s2n_ecc_curve_secp256r1, &s2n_sike_p434_r2, &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384},
+//    {&s2n_ecc_curve_secp256r1, &s2n_bike1_l1_r1, &s2n_ecdhe_bike_rsa_with_aes_256_gcm_sha384},
+//    {&s2n_ecc_curve_secp256r1, &s2n_bike1_l1_r2, &s2n_ecdhe_bike_rsa_with_aes_256_gcm_sha384},
     {&s2n_ecc_curve_secp256r1, &s2n_kyber_512_r2, &s2n_ecdhe_kyber_rsa_with_aes_256_gcm_sha384},
 };
 
@@ -99,6 +99,7 @@ int one_time_cleanup() {
     free(server_dhparams_pem);
     free(server_cert_chain);
     free(client_chain);
+    free(server_private_key);
     GUARD(s2n_cert_chain_and_key_free(server_chain_and_key));
     GUARD(s2n_config_free(server_config));
     GUARD(s2n_connection_free(server_conn));
