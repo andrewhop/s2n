@@ -36,7 +36,7 @@ extern "C" {
 #define MAX_AAD 32
 #define MAX_IV 32
 
-#define MAX_MESSAGE_SIZE S2N_DEFAULT_RECORD_LENGTH
+#define MAX_MESSAGE_SIZE 16384
 
 struct cipher_name {
     s2n_cipher *cipher;
@@ -60,7 +60,7 @@ static const struct cipher_name ciphers[] = {
     {&s2n_tls13_aes256_gcm, "s2n_tls13_aes256_gcm"},
 };
 static const int message_sizes[] = {
-    62, 64, 256, S2N_SMALL_RECORD_LENGTH, S2N_DEFAULT_RECORD_LENGTH
+    64, 256, 1024, 4096, 16384
 };
 
 int run_cipher(s2n_cipher *cipher, int message_size) {
@@ -72,43 +72,61 @@ int run_cipher(s2n_cipher *cipher, int message_size) {
 
     s2n_stack_blob(key, cipher->key_material_size, MAX_KEY_SIZE);
     s2n_stack_blob(plaintext_message, message_size, MAX_MESSAGE_SIZE);
-    s2n_stack_blob(ciphertext, message_size + MAX_TAG, MAX_MESSAGE_SIZE + MAX_TAG);
+    s2n_stack_blob(ciphertext, message_size, MAX_MESSAGE_SIZE);
+    s2n_stack_blob(decrypted_message, message_size, MAX_MESSAGE_SIZE);
 
     struct s2n_session_key encryption_session_key = {};
+    struct s2n_session_key decryption_session_key = {};
     GUARD(s2n_session_key_alloc(&encryption_session_key));
+    GUARD(s2n_session_key_alloc(&decryption_session_key));
     uint8_t iv_storage[MAX_IV] = {0};
     s2n_blob iv = {0};
     s2n_stack_blob(aad, S2N_TLS_MAX_AAD_LEN, S2N_TLS_MAX_AAD_LEN);
 
     GUARD(cipher->init(&encryption_session_key));
     GUARD(cipher->set_encryption_key(&encryption_session_key, &key));
+    GUARD(cipher->init(&decryption_session_key));
+    GUARD(cipher->set_decryption_key(&decryption_session_key, &key));
     if (cipher->type == s2n_cipher::S2N_COMPOSITE) {
         uint8_t mac_size = cipher->io.comp.mac_key_size;
         s2n_stack_blob(mac_key, mac_size, MAX_MAC_KEY_SIZE);
         cipher->io.comp.set_mac_write_key(&encryption_session_key, mac_key.data, mac_key.size);
+        cipher->io.comp.set_mac_write_key(&decryption_session_key, mac_key.data, mac_key.size);
     }
     switch (cipher->type) {
         case s2n_cipher::S2N_STREAM:
             GUARD(cipher->io.stream.encrypt(&encryption_session_key, &plaintext_message, &ciphertext));
+            GUARD(cipher->io.stream.decrypt(&decryption_session_key, &ciphertext, &decrypted_message));
             break;
         case s2n_cipher::S2N_CBC:
             GUARD(s2n_blob_init(&iv, iv_storage, cipher->io.cbc.record_iv_size));
+            GUARD(s2n_blob_init(&ciphertext, ciphertext_buf, plaintext_message.size));
+//            GUARD(s2n_blob_init(&decrypted_message, decrypted_message_buf, plaintext_message.size));
             GUARD(cipher->io.cbc.encrypt(&encryption_session_key, &iv, &plaintext_message, &ciphertext));
+            GUARD(cipher->io.cbc.decrypt(&decryption_session_key, &iv, &ciphertext, &decrypted_message));
+
             break;
         case s2n_cipher::S2N_AEAD:
             GUARD(s2n_blob_init(&iv, iv_storage, cipher->io.aead.record_iv_size + cipher->io.aead.fixed_iv_size));
+//            GUARD(s2n_blob_init(&ciphertext, ciphertext_buf, plaintext_message.size));
             GUARD(cipher->io.aead.encrypt(&encryption_session_key, &iv, &aad, &plaintext_message, &ciphertext));
+            GUARD(cipher->io.aead.decrypt(&decryption_session_key, &iv, &aad, &ciphertext, &decrypted_message));
+
             break;
         case s2n_cipher::S2N_COMPOSITE:
             GUARD(s2n_blob_init(&iv, iv_storage, cipher->io.comp.record_iv_size));
-            GUARD(s2n_blob_init(&ciphertext, ciphertext_buf, plaintext_message.size));
+//            GUARD(s2n_blob_init(&ciphertext, ciphertext_buf, plaintext_message.size));
             GUARD(cipher->io.comp.encrypt(&encryption_session_key, &iv, &plaintext_message, &ciphertext));
+            GUARD(cipher->io.comp.decrypt(&decryption_session_key, &iv, &ciphertext, &decrypted_message));
             break;
         default:
             S2N_ERROR(S2N_ERR_CIPHER_TYPE);
     }
 
     GUARD(s2n_session_key_free(&encryption_session_key));
+    GUARD(s2n_session_key_free(&decryption_session_key));
+    eq_check(memcmp(plaintext_message.data, decrypted_message.data, plaintext_message.size), 0);
+
     return 0;
 }
 
