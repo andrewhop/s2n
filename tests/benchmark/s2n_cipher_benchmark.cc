@@ -200,7 +200,7 @@ auto BM_test = [](benchmark::State &state, s2n_cipher *cipher, int message_size)
     BENCHMARK_SUCCESS(s2n_free(&message));
     BENCHMARK_SUCCESS(s2n_free(&original_message));
 
-    state.SetBytesProcessed(message_size);
+    state.SetBytesProcessed(message_size * state.iterations());
     state.SetItemsProcessed(state.iterations());
 };
 
