@@ -39,7 +39,9 @@ static const struct test_case tests[] = {
     {&s2n_ecc_curve_secp256r1, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
     {&s2n_ecc_curve_secp384r1, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
     {&s2n_ecc_curve_secp521r1, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
+#if EVP_APIS_SUPPORTED
     {&s2n_ecc_curve_x25519, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
+#endif
     {&s2n_ecc_curve_secp256r1, &s2n_sike_p503_r1, &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384},
     {&s2n_ecc_curve_secp256r1, &s2n_sike_p434_r2, &s2n_ecdhe_sike_rsa_with_aes_256_gcm_sha384},
     {&s2n_ecc_curve_secp256r1, &s2n_bike1_l1_r1, &s2n_ecdhe_bike_rsa_with_aes_256_gcm_sha384},
