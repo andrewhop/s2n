@@ -37,7 +37,7 @@ struct test_case {
 static const struct test_case tests[] = {
     {nullptr, nullptr, &s2n_dhe_rsa_with_aes_128_cbc_sha},
     {nullptr, nullptr, &s2n_dhe_rsa_with_aes_128_gcm_sha256},
-    {nullptr, nullptr, &s2n_dhe_rsa_with_aes_128_gcm_sha256},
+    {nullptr, nullptr, &s2n_dhe_rsa_with_aes_256_gcm_sha384},
     {&s2n_ecc_curve_secp256r1, nullptr, &s2n_ecdhe_rsa_with_aes_128_cbc_sha},
     {&s2n_ecc_curve_secp256r1, nullptr, &s2n_ecdhe_rsa_with_aes_128_gcm_sha256},
     {&s2n_ecc_curve_secp256r1, nullptr, &s2n_ecdhe_rsa_with_aes_256_gcm_sha384},
