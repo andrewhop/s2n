@@ -170,7 +170,7 @@ static S2N_RESULT s2n_test_key_schedule(s2n_mode mode, uint16_t handshake_type, 
                 continue;
             }
             /* Skip duplicate ClientHellos */
-            if ((tls13_handshakes[handshake_type][i] == CLIENT_HELLO)) {
+            if (tls13_handshakes[handshake_type][i] == CLIENT_HELLO) {
                 continue;
             }
             RESULT_GUARD(s2n_connection_set_early_data_state(conn, next_state));
